@@ -1,4 +1,4 @@
-﻿namespace core;
+﻿namespace gem;
 
 public class Class1
 {
