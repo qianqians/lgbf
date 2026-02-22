@@ -40,25 +40,25 @@ public class Startup {
     public void ConfigureServices(IServiceCollection services) {
     }
 
-    private static int lcount = 0;
-    private static long _recvStatTick = TimerService.Tick + 1000;
+    private static int _lCount = 0;
+    private static long _receiveStatTick = TimerService.Tick + 1000;
     private static long _lastStatTick = TimerService.Tick + 1000;
     public void Configure(IApplicationBuilder app) {
         app.Run(async (context) =>
         {
             var begin = TimerService.Tick;
 
-            int count = Interlocked.Add(ref lcount, 1);
-            if (TimerService.Tick >= _recvStatTick) {
-                Interlocked.And(ref lcount, -count);
+            var count = Interlocked.Add(ref _lCount, 1);
+            if (TimerService.Tick >= _receiveStatTick) {
+                Interlocked.And(ref _lCount, -count);
                 Log.info("Connect statistics: {0} messages in {1} ms", count, TimerService.Tick - _lastStatTick);
                 _lastStatTick = TimerService.Tick;
-                _recvStatTick = TimerService.Tick + 1000;
+                _receiveStatTick = TimerService.Tick + 1000;
             }
             
-            string[] segments = context.Request.Path.Value!.TrimStart('/').Split('/');
-            string version = segments.Length > 0 ? segments[0] : "unknown";
-            string endpoint = segments.Length > 1 ? segments[1] : "unknown";
+            var segments = context.Request.Path.Value!.TrimStart('/').Split('/');
+            var version = segments.Length > 0 ? segments[0] : "unknown";
+            var endpoint = segments.Length > 1 ? segments[1] : "unknown";
 
             Func<HttpRsp, Task>? cb = null;
             if (context.Request.Method == HttpMethods.Get)
@@ -83,13 +83,12 @@ public class Startup {
                 return;
             }
 
-            byte[] buf = null;
-            int length = 0;
+            byte[]? buf = null;
             try {
                 if (context.Request.ContentLength != null) {
-                    length = (int)context.Request.ContentLength;
+                    var length = (int)context.Request.ContentLength;
                     buf = ArrayPool<byte>.Shared.Rent(length);
-                    int offset = 0;
+                    var offset = 0;
                     while (true) {
                         var len = await context.Request.Body.ReadAsync(buf, offset, length - offset);
                         if (len == 0) {

@@ -4,6 +4,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "gem", "gem\gem.csproj", "{2
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "core", "core\core.csproj", "{0F7D2541-A911-4AC9-8EE9-1F37B25EB68E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "common", "common\common.csproj", "{E02AB0DC-F326-4D6F-940C-6B72826C79DB}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -18,5 +20,9 @@ Global
 		{0F7D2541-A911-4AC9-8EE9-1F37B25EB68E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0F7D2541-A911-4AC9-8EE9-1F37B25EB68E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0F7D2541-A911-4AC9-8EE9-1F37B25EB68E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E02AB0DC-F326-4D6F-940C-6B72826C79DB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E02AB0DC-F326-4D6F-940C-6B72826C79DB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E02AB0DC-F326-4D6F-940C-6B72826C79DB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E02AB0DC-F326-4D6F-940C-6B72826C79DB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
