@@ -4,13 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="1211e374-b151-4916-8b70-d6fe6e7fc1f6" name="更改" comment="">
-      <change afterPath="$PROJECT_DIR$/common/proto/common.slice" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.idea.lgbf/.idea/encodings.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.lgbf/.idea/encodings.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.idea.lgbf/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.lgbf/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/common/Class1.cs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/common/common.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/common/common.csproj" afterDir="false" />
-    </list>
+    <list default="true" id="1211e374-b151-4916-8b70-d6fe6e7fc1f6" name="更改" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -64,7 +58,7 @@
       <updated>1771845721451</updated>
       <workItem from="1771845723745" duration="531000" />
       <workItem from="1771846362579" duration="421000" />
-      <workItem from="1771848433996" duration="940000" />
+      <workItem from="1771848433996" duration="1227000" />
     </task>
     <servers />
   </component>
