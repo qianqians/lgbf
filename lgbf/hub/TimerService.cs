@@ -3,7 +3,7 @@ using System.Threading;
 using System.Collections;
 using System.Collections.Generic;
 
-namespace core;
+namespace hub;
 
 public class TimerService
 {
@@ -131,7 +131,7 @@ public class TimerService
                 }
                 catch (System.Exception e)
                 {
-                    Log.err("System.Exceptio{0}", e);
+                    Log.Err("System.Exceptio{0}", e);
                 }
             }
             else
@@ -200,7 +200,7 @@ public class TimerService
                 }
                 catch (System.Exception e)
                 {
-                    Log.err("System.Exception{0}", e);
+                    Log.Err("System.Exception{0}", e);
                 }
             }
         }
@@ -261,7 +261,7 @@ public class TimerService
                 }
                 catch (System.Exception e)
                 {
-                    Log.err("System.Exception{0}", e);
+                    Log.Err("System.Exception{0}", e);
                 }
             }
         }
@@ -323,7 +323,7 @@ public class TimerService
                 }
                 catch (System.Exception e)
                 {
-                    Log.err("System.Exception{0}", e);
+                    Log.Err("System.Exception{0}", e);
                 }
             }
         }
@@ -401,7 +401,7 @@ public class TimerService
                 }
                 catch (System.Exception e)
                 {
-                    Log.err("System.Exception{0}", e);
+                    Log.Err("System.Exception{0}", e);
                 }
             }
         }
@@ -493,7 +493,7 @@ public class TimerService
                 }
                 catch (System.Exception e)
                 {
-                    Log.err("System.Exception{0}", e);
+                    Log.Err("System.Exception{0}", e);
                 }
             }
         }

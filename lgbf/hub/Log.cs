@@ -1,7 +1,7 @@
 ﻿using System.Diagnostics;
 using System;
 
-namespace core;
+namespace hub;
 
 public class Log
 {
@@ -20,42 +20,42 @@ public class Log
         {
             return;
         }
-        output(new StackFrame(1), TimerService.Tick, "trace", log, agrvs);
+        Output(new StackFrame(1), TimerService.Tick, "trace", log, agrvs);
     }
 
-    static public void debug(string log, params object[] agrvs)
+    public static void Debug(string log, params object[] agrvs)
     {
         if (logMode > EnLogMode.Debug)
         {
             return;
         }
-        output(new System.Diagnostics.StackFrame(1), TimerService.Tick, "debug", log, agrvs);
+        Output(new System.Diagnostics.StackFrame(1), TimerService.Tick, "debug", log, agrvs);
     }
 
-    static public void info(string log, params object[] agrvs)
+    public static void Info(string log, params object[] agrvs)
     {
         if (logMode > EnLogMode.Info)
         {
             return;
         }
-        output(new System.Diagnostics.StackFrame(1), TimerService.Tick, "info", log, agrvs);
+        Output(new System.Diagnostics.StackFrame(1), TimerService.Tick, "info", log, agrvs);
     }
 
-    static public void warn(string log, params object[] agrvs)
+    public static void Warn(string log, params object[] agrvs)
     {
         if (logMode > EnLogMode.Warn)
         {
             return;
         }
-        output(new System.Diagnostics.StackFrame(1), TimerService.Tick, "warn", log, agrvs);
+        Output(new System.Diagnostics.StackFrame(1), TimerService.Tick, "warn", log, agrvs);
     }
 
-    static public void err(string log, params object[] agrvs)
+    public static void Err(string log, params object[] agrvs)
     {
-        output(new System.Diagnostics.StackFrame(1), TimerService.Tick, "err", log, agrvs);
+        Output(new System.Diagnostics.StackFrame(1), TimerService.Tick, "err", log, agrvs);
     }
 
-    static private void output(StackFrame sf, long tmptime, string level, string log, params object[] agrvs)
+    private static void Output(StackFrame sf, long tmptime, string level, string log, params object[] agrvs)
     {
         var startTime = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
         var time = startTime.AddMilliseconds(tmptime);
@@ -94,7 +94,7 @@ public class Log
                     };
                 }
             }
-            fs.WriteLine($"[{time}] [{level}] [{sf.GetMethod().DeclaringType.FullName}] [{sf.GetMethod().Name}]:{log}", agrvs);
+            fs.WriteLine($"[{time}] [{level}] [{sf.GetMethod()?.DeclaringType?.FullName}] [{sf.GetMethod()?.Name}]:{log}", agrvs);
         }
     }
 

@@ -13,7 +13,7 @@ using System.Threading;
 using System.Text;
 using System.Text.RegularExpressions;
 
-namespace core;
+namespace hub;
 
 public class HttpRsp(HttpResponse rsp)
 {
@@ -29,7 +29,7 @@ public class HttpRsp(HttpResponse rsp)
             return rsp.Body.WriteAsync(buf);
 
         } catch (Exception ex) {
-            Log.err("Response Exception:{0}", ex);
+            Log.Err("Response Exception:{0}", ex);
         } finally {
         }
         return ValueTask.CompletedTask;
@@ -51,7 +51,7 @@ public class Startup {
             var count = Interlocked.Add(ref _lCount, 1);
             if (TimerService.Tick >= _receiveStatTick) {
                 Interlocked.And(ref _lCount, -count);
-                Log.info("Connect statistics: {0} messages in {1} ms", count, TimerService.Tick - _lastStatTick);
+                Log.Info("Connect statistics: {0} messages in {1} ms", count, TimerService.Tick - _lastStatTick);
                 _lastStatTick = TimerService.Tick;
                 _receiveStatTick = TimerService.Tick + 1000;
             }
@@ -99,7 +99,7 @@ public class Startup {
                 }
                 await cb(new HttpRsp(context.Response));
             } catch (Exception ex) {
-                Log.err("process http req ex:{0}", ex);
+                Log.Err("process http req ex:{0}", ex);
             } finally {
                 if (buf != null) {
                     ArrayPool<byte>.Shared.Return(buf);
@@ -107,7 +107,7 @@ public class Startup {
 
                 var tick = TimerService.Tick - begin;
                 if (tick > 1000) {
-                    Log.err("Timeout: elapsed_ticks={0}", tick);
+                    Log.Err("Timeout: elapsed_ticks={0}", tick);
                 }
             }
         });
@@ -118,10 +118,10 @@ public class HttpService
 {
     private class VerHandle
     {
-        public Dictionary<string, Func<HttpRsp, Task>> GetCB = new Dictionary<string, Func<HttpRsp, Task>>();
-        public Dictionary<string, Func<HttpRsp, Task>> PostCB = new Dictionary<string, Func<HttpRsp, Task>>();
+        public readonly Dictionary<string, Func<HttpRsp, Task>> GetCb = new();
+        public readonly Dictionary<string, Func<HttpRsp, Task>> PostCb = new();
     }
-    private static Dictionary<string, VerHandle> VerCB;
+    private static readonly Dictionary<string, VerHandle> VerCb = new();
 
     private readonly int _port;
     private IHost? _h;
@@ -134,7 +134,8 @@ public class HttpService
     private static readonly Dictionary<string, string>  Headers = new Dictionary<string, string> { 
         { "Content-Type", "application/json; charset=utf-8" },
         { "Access-Control-Allow-Origin", "*" }, {"Access-Control-Allow-Headers", "XL-Token, Content-Type" },
-        { "Access-Control-Allow-Methods", "POST, GET, OPTIONS"} };
+        { "Access-Control-Allow-Methods", "POST, GET, OPTIONS"} 
+    };
     public static Dictionary<string, string> BuildCrossHeaders()
     {
         return Headers;
@@ -144,34 +145,34 @@ public class HttpService
     {
         if (string.IsNullOrEmpty(ver))
         {
-            Log.err("process http get req uri:{0} with no ver info", uri);
+            Log.Err("process http get req uri:{0} with no ver info", uri);
             return;
         }
         
-        if (!VerCB.TryGetValue(ver, out var cbDict))
+        if (!VerCb.TryGetValue(ver, out var cbDict))
         {
             cbDict = new VerHandle();
-            VerCB.Add(ver, cbDict);
+            VerCb.Add(ver, cbDict);
         }
         
-        cbDict.GetCB.Add(ver, callback);
+        cbDict.GetCb.Add(ver, callback);
     }
 
     public static void Post(string ver, string uri, Func<HttpRsp, Task> callback)
     {
         if (string.IsNullOrEmpty(ver))
         {
-            Log.err("process http get req uri:{0} with no ver info", uri);
+            Log.Err("process http get req uri:{0} with no ver info", uri);
             return;
         }
 
-        if (!VerCB.TryGetValue(ver, out var cbDict))
+        if (!VerCb.TryGetValue(ver, out var cbDict))
         {
             cbDict = new VerHandle();
-            VerCB.Add(ver, cbDict);
+            VerCb.Add(ver, cbDict);
         }
 
-        cbDict.PostCB.Add(ver, callback);
+        cbDict.PostCb.Add(ver, callback);
     }
 
     public static bool TryGetGetCallback(string ver, string uri, out Func<HttpRsp, Task>? cb)
@@ -179,17 +180,17 @@ public class HttpService
         cb = null;
         if (string.IsNullOrEmpty(ver))
         {
-            Log.err("process http get req uri:{0} with no ver info", uri);
+            Log.Err("process http get req uri:{0} with no ver info", uri);
             return false;
         }
         
-        if (!VerCB.TryGetValue(ver, out var cbDict))
+        if (!VerCb.TryGetValue(ver, out var cbDict))
         {
-            Log.err("process http get req uri:{0} with no ver cb", uri);
+            Log.Err("process http get req uri:{0} with no ver cb", uri);
             return false;
         }
 
-        return cbDict.GetCB.TryGetValue(uri, out cb);
+        return cbDict.GetCb.TryGetValue(uri, out cb);
     }
 
     public static bool TryGetPostCallback(string ver, string uri, out Func<HttpRsp, Task>? cb)
@@ -197,17 +198,17 @@ public class HttpService
         cb = null;
         if (string.IsNullOrEmpty(ver))
         {
-            Log.err("process http get req uri:{0} with no ver info", uri);
+            Log.Err("process http get req uri:{0} with no ver info", uri);
             return false;
         }
         
-        if (!VerCB.TryGetValue(ver, out var cbDict))
+        if (!VerCb.TryGetValue(ver, out var cbDict))
         {
-            Log.err("process http get req uri:{0} with no ver cb", uri);
+            Log.Err("process http get req uri:{0} with no ver cb", uri);
             return false;
         }
 
-        return cbDict.PostCB.TryGetValue(uri, out cb);
+        return cbDict.PostCb.TryGetValue(uri, out cb);
     }
 
     private void RunServerAsync()

@@ -4,7 +4,15 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="1211e374-b151-4916-8b70-d6fe6e7fc1f6" name="更改" comment="" />
+    <list default="true" id="1211e374-b151-4916-8b70-d6fe6e7fc1f6" name="更改" comment="">
+      <change afterPath="$PROJECT_DIR$/hub/RedisConnectionHelper.cs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/hub/RedisHandle.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/.idea.lgbf/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.lgbf/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/hub/HttpService.cs" beforeDir="false" afterPath="$PROJECT_DIR$/hub/HttpService.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/hub/Log.cs" beforeDir="false" afterPath="$PROJECT_DIR$/hub/Log.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/hub/TimerService.cs" beforeDir="false" afterPath="$PROJECT_DIR$/hub/TimerService.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/hub/hub.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/hub/hub.csproj" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -14,7 +22,9 @@
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/.." />
   </component>
   <component name="HighlightingSettingsPerFile">
-    <setting file="file://$PROJECT_DIR$/common/IceRPC.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/hub/RedisConnectionHelper.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/hub/RedisHandle.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/84765e18884642d2806a2dc55352a36e124400/15/d2dadecb/ConnectionMultiplexer.cs" root0="SKIP_HIGHLIGHTING" />
   </component>
   <component name="McpProjectServerCommands">
     <commands />
@@ -59,6 +69,7 @@
       <workItem from="1771845723745" duration="531000" />
       <workItem from="1771846362579" duration="421000" />
       <workItem from="1771848433996" duration="1227000" />
+      <workItem from="1772177440897" duration="4089000" />
     </task>
     <servers />
   </component>
