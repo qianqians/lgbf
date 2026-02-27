@@ -1,5 +1,0 @@
-module Grid
-
-interface GridService {
-    saveEntity(guid: string)
-}
