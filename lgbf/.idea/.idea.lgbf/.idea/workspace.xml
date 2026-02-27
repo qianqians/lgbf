@@ -5,13 +5,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="1211e374-b151-4916-8b70-d6fe6e7fc1f6" name="更改" comment="">
-      <change afterPath="$PROJECT_DIR$/hub/RedisConnectionHelper.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/hub/RedisHandle.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/.idea.lgbf/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.lgbf/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/hub/HttpService.cs" beforeDir="false" afterPath="$PROJECT_DIR$/hub/HttpService.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/hub/Log.cs" beforeDir="false" afterPath="$PROJECT_DIR$/hub/Log.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/hub/TimerService.cs" beforeDir="false" afterPath="$PROJECT_DIR$/hub/TimerService.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/hub/hub.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/hub/hub.csproj" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -69,7 +63,7 @@
       <workItem from="1771845723745" duration="531000" />
       <workItem from="1771846362579" duration="421000" />
       <workItem from="1771848433996" duration="1227000" />
-      <workItem from="1772177440897" duration="4089000" />
+      <workItem from="1772177440897" duration="4999000" />
     </task>
     <servers />
   </component>
