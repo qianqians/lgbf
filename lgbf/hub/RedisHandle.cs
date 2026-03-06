@@ -198,6 +198,25 @@ public class RedisHandle
         }
     }
 
+    public async ValueTask<bool> TryLock(string key, string token, uint timeout)
+    {
+        try
+        {
+            if (_database == null)
+            {
+                return false;
+            }
+            
+            return await _database.LockTakeAsync(key, token, System.TimeSpan.FromMilliseconds(timeout));
+        }
+        catch (RedisTimeoutException e)
+        {
+            Recover(e);
+        }
+        
+        return false;
+    }
+
     public async ValueTask UnLock(string key, string token)
     {
         while (true)
