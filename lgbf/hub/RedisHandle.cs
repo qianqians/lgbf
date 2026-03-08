@@ -99,6 +99,12 @@ public class RedisHandle
         }
     }
 
+    public async Task<byte[]?> GetData(string key)
+    {
+        byte[]? bin = await GetStrData(key);
+        return bin;
+    }
+
     public async ValueTask<T?> GetData<T>(string key)
     {
         string? json= await GetStrData(key);

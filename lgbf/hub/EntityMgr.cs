@@ -11,7 +11,7 @@ public class EntityMgr
         unlockList.Clear();
     }
     
-    public async Task CallLockAndGetEntity(Context ctx, string[] entityIdes, Action<Entity, ReadOnlyEntity[]> callback)
+    public async Task CallLockAndGetEntity(Context ctx, string[] entityIdes, Action<Entity, Entity[]> callback)
     {
         var lockEntities = new SortedSet<string>(){ctx.Guid};
         foreach (var entity in entityIdes)
@@ -24,22 +24,22 @@ public class EntityMgr
         try
         {
             Entity? self = null;
-            var entities = new List<ReadOnlyEntity>();
+            var entities = new List<Entity>();
             foreach (var entityId in lockEntities)
             {
                 var token = Guid.NewGuid().ToString();
-                var lockSuccess = await ctx.Redis.TryLock(entityId, token, 10_000);
+                var lockSuccess = await ctx.Redis.TryLock(string.Format(RedisHelp.EntityLockKey, entityId), token, 10_000);
                 if (lockSuccess)
                 {
                     unlockList.Add(async () => { await ctx.Redis.UnLock(entityId, token); });
-                    entities.Add(new ReadOnlyEntity(entityId));
+                    entities.Add(new Entity(ctx.From(entityId)));
                 }
                 else
                 {
                     break;
                 }
             }
-            self = new Entity(ctx.From(ctx.Guid));
+            self = new Entity(ctx);
 
             if (entities.Count != entityIdes.Length)
             {

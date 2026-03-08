@@ -4,7 +4,18 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="1211e374-b151-4916-8b70-d6fe6e7fc1f6" name="更改" comment="" />
+    <list default="true" id="1211e374-b151-4916-8b70-d6fe6e7fc1f6" name="更改" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/.idea.lgbf/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.lgbf/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.vs/lgbf/FileContentIndex/e5afc4cb-7c75-49bb-b3bc-8740ca52062b.vsidx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.vs/lgbf/v18/.suo" beforeDir="false" afterPath="$PROJECT_DIR$/.vs/lgbf/v18/.suo" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.vs/lgbf/v18/DocumentLayout.backup.json" beforeDir="false" afterPath="$PROJECT_DIR$/.vs/lgbf/v18/DocumentLayout.backup.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.vs/lgbf/v18/DocumentLayout.json" beforeDir="false" afterPath="$PROJECT_DIR$/.vs/lgbf/v18/DocumentLayout.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/hub/Context.cs" beforeDir="false" afterPath="$PROJECT_DIR$/hub/Context.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/hub/Entity.cs" beforeDir="false" afterPath="$PROJECT_DIR$/hub/Entity.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/hub/EntityMgr.cs" beforeDir="false" afterPath="$PROJECT_DIR$/hub/EntityMgr.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/hub/RedisHandle.cs" beforeDir="false" afterPath="$PROJECT_DIR$/hub/RedisHandle.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/hub/hub.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/hub/hub.csproj" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -14,9 +25,10 @@
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/.." />
   </component>
   <component name="HighlightingSettingsPerFile">
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/d2fc4e5236f74a0d8789f902be54d3bbf48938/12/64d6f979/Object.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/2a3662d88968df4bcafd113d9db2bf939c4e569b46054e7aa733e0bd33522f/IAsyncCursor.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/hub/RedisConnectionHelper.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/hub/RedisHandle.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/84765e18884642d2806a2dc55352a36e124400/15/d2dadecb/ConnectionMultiplexer.cs" root0="SKIP_HIGHLIGHTING" />
   </component>
   <component name="McpProjectServerCommands">
     <commands />
@@ -62,6 +74,8 @@
       <workItem from="1771846362579" duration="421000" />
       <workItem from="1771848433996" duration="1227000" />
       <workItem from="1772177440897" duration="5297000" />
+      <workItem from="1772884253891" duration="6681000" />
+      <workItem from="1772976314793" duration="6546000" />
     </task>
     <servers />
   </component>

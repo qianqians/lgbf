@@ -3,6 +3,10 @@
   "WorkspaceRootPath": "C:\\Users\\theDa\\Documents\\workspace\\library\\lgbf\\lgbf\\",
   "Documents": [
     {
+      "AbsoluteMoniker": "D:0:0:{F101E047-E8CD-4A03-9EA7-F89D0D57B1CA}|hub\\hub.csproj|c:\\users\\theda\\documents\\workspace\\library\\lgbf\\lgbf\\hub\\context.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{F101E047-E8CD-4A03-9EA7-F89D0D57B1CA}|hub\\hub.csproj|solutionrelative:hub\\context.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
       "AbsoluteMoniker": "D:0:0:{F101E047-E8CD-4A03-9EA7-F89D0D57B1CA}|hub\\hub.csproj|c:\\users\\theda\\documents\\workspace\\library\\lgbf\\lgbf\\hub\\entitymgr.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{F101E047-E8CD-4A03-9EA7-F89D0D57B1CA}|hub\\hub.csproj|solutionrelative:hub\\entitymgr.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
@@ -18,11 +22,24 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 1,
+          "SelectedChildIndex": 0,
           "Children": [
             {
               "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 0,
+              "Title": "Context.cs",
+              "DocumentMoniker": "C:\\Users\\theDa\\Documents\\workspace\\library\\lgbf\\lgbf\\hub\\Context.cs",
+              "RelativeDocumentMoniker": "hub\\Context.cs",
+              "ToolTip": "C:\\Users\\theDa\\Documents\\workspace\\library\\lgbf\\lgbf\\hub\\Context.cs",
+              "RelativeToolTip": "hub\\Context.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-06T16:18:07.482Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
               "Title": "Entity.cs",
               "DocumentMoniker": "C:\\Users\\theDa\\Documents\\workspace\\library\\lgbf\\lgbf\\hub\\Entity.cs",
               "RelativeDocumentMoniker": "hub\\Entity.cs",
@@ -35,7 +52,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 0,
+              "DocumentIndex": 1,
               "Title": "EntityMgr.cs",
               "DocumentMoniker": "C:\\Users\\theDa\\Documents\\workspace\\library\\lgbf\\lgbf\\hub\\EntityMgr.cs",
               "RelativeDocumentMoniker": "hub\\EntityMgr.cs",
