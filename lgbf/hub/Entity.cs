@@ -20,7 +20,7 @@ public interface IHostingData
 
     public BsonDocument Store();
 
-    public bool IsDirty();
+    public void SetDirty(Action ifDirty);
 }
 
 public interface IDataAgent<T> where T : IHostingData
@@ -43,14 +43,12 @@ internal class DataAgent<T> : IDataAgent<T> where T : IHostingData
     
     public void WriteBack()
     {
-        _entity.Ctx.Redis.SetData(
-            string.Format(RedisHelp.EntityStoreKey, T.Type(), 
-                _entity.Ctx.Guid), Data.Store().ToBson());
+        _entity.Ctx.Redis.SetData(string.Format(RedisHelp.EntityStoreKey, T.Type(), _entity.Ctx.Guid), Data.Store().ToBson());
         _entity.Ctx.Redis.PushList(RedisHelp.EntityStoreMongodbList, _entity.Ctx.Guid);
     }
 }
 
-public record class Entity(Context Ctx)
+public record Entity(Context Ctx)
 {
     public async Task<IDataAgent<T>?> Get<T>() where T : IHostingData
     {

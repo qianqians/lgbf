@@ -6,8 +6,6 @@ public class AsyncNtfMsg : IHostingData
 {
     public required List<string> AsyncNtfMsgList;
 
-    private bool _isDirty = false;
-    
     public static string Type()
     {
         return "AsyncNtfMsg";
@@ -53,11 +51,10 @@ public class AsyncNtfMsg : IHostingData
     public void SendOfflineMsg(string msg)
     {
         AsyncNtfMsgList.Add(msg);
-        _isDirty = true;
     }
 
-    public bool IsDirty()
+    public void SetDirty(Action ifDirty)
     {
-        return _isDirty;
+        ifDirty.Invoke();
     }
 }
