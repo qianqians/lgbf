@@ -124,7 +124,7 @@ public class MongodbProxy
         return r;
     }
 
-    public async ValueTask<IAsyncCursor<MongoDB.Bson.BsonDocument>> Find(string db, string collection, byte[] bsonQuery, int skip, int limit, string sort, bool ascending)
+    public async ValueTask<MongoDB.Bson.BsonArray?> Find(string db, string collection, byte[] bsonQuery, int skip, int limit, string sort, bool ascending)
     {
         var mongoClient = GetMongoClient();
         var dbInst = mongoClient.GetDatabase(db);
@@ -146,7 +146,27 @@ public class MongodbProxy
                 Builders<MongoDB.Bson.BsonDocument>.Sort.Descending(sort);
         }
 
-        return await collectionInst.FindAsync(bsonQueryDoc, opt);
+        var c = await collectionInst.FindAsync(bsonQueryDoc, opt);
+        if (c == null)
+        {
+            return null;
+        }
+        
+        var datalist = new MongoDB.Bson.BsonArray();
+        while (await c.MoveNextAsync())
+        {
+            var cur = c.Current;
+            if (cur != null)
+            {
+                foreach (var data in cur)
+                {
+                    data.Remove("_id");
+                    datalist.Add(data);
+                }
+            }
+        }
+        
+        return datalist;
     }
 
     public async ValueTask<int> Count(string db, string collection, byte[] bsonQuery)

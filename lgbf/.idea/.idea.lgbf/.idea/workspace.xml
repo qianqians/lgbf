@@ -5,6 +5,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="1211e374-b151-4916-8b70-d6fe6e7fc1f6" name="更改" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/.idea.lgbf/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.lgbf/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/hub/Entity.cs" beforeDir="false" afterPath="$PROJECT_DIR$/hub/Entity.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/hub/MongodbProxy.cs" beforeDir="false" afterPath="$PROJECT_DIR$/hub/MongodbProxy.cs" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -68,7 +70,7 @@
       <workItem from="1772884253891" duration="6681000" />
       <workItem from="1772976314793" duration="6546000" />
       <workItem from="1773027396149" duration="11000" />
-      <workItem from="1773049924212" duration="344000" />
+      <workItem from="1773049924212" duration="2468000" />
     </task>
     <servers />
   </component>
