@@ -52,9 +52,4 @@ public class AsyncNtfMsg : IHostingData
     {
         AsyncNtfMsgList.Add(msg);
     }
-
-    public void SetDirty(Action ifDirty)
-    {
-        ifDirty.Invoke();
-    }
 }

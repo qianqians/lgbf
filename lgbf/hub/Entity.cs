@@ -19,8 +19,11 @@ public interface IHostingData
     }
 
     public BsonDocument Store();
-
-    public void SetDirty(Action ifDirty);
+    
+    public void SetDirty(Action ifDirty)
+    {
+        ifDirty.Invoke();
+    }
 }
 
 public interface IDataAgent<T> where T : IHostingData
