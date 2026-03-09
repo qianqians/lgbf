@@ -2,35 +2,35 @@ using System.Diagnostics.Contracts;
 using MongoDB.Bson;
 namespace hub;
 
-public class OfflineMsg : IHostingData
+public class AsyncNtfMsg : IHostingData
 {
-    public required List<string> OfflineMsgList;
+    public required List<string> AsyncNtfMsgList;
 
     private bool _isDirty = false;
     
     public static string Type()
     {
-        return "OfflineMsg";
+        return "AsyncNtfMsg";
     }
 
     public static IHostingData? Create()
     {
-        return new OfflineMsg()
+        return new AsyncNtfMsg()
         {
-            OfflineMsgList = new()
+            AsyncNtfMsgList = new()
         };
     }
 
     public static IHostingData? Load(BsonDocument data)
     {
-        var msgList = new OfflineMsg()
+        var msgList = new AsyncNtfMsg()
         {
-            OfflineMsgList = new()
+            AsyncNtfMsgList = new()
         };
         
         foreach(var item in data.GetValue("list").AsBsonArray)
         {
-            msgList.OfflineMsgList.Add(item.AsString);
+            msgList.AsyncNtfMsgList.Add(item.AsString);
         }
 
         return msgList;
@@ -39,7 +39,7 @@ public class OfflineMsg : IHostingData
     public BsonDocument Store()
     {
         var itemList = new BsonArray();
-        foreach (var item in OfflineMsgList)
+        foreach (var item in AsyncNtfMsgList)
         {
             itemList.Add(item);
         }
@@ -52,7 +52,7 @@ public class OfflineMsg : IHostingData
 
     public void SendOfflineMsg(string msg)
     {
-        OfflineMsgList.Add(msg);
+        AsyncNtfMsgList.Add(msg);
         _isDirty = true;
     }
 

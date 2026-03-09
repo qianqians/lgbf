@@ -5,16 +5,20 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="1211e374-b151-4916-8b70-d6fe6e7fc1f6" name="更改" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/.idea.lgbf/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.lgbf/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.vs/lgbf/FileContentIndex/e5afc4cb-7c75-49bb-b3bc-8740ca52062b.vsidx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.vs/ProjectEvaluation/lgbf.metadata.v10.bin" beforeDir="false" afterPath="$PROJECT_DIR$/.vs/ProjectEvaluation/lgbf.metadata.v10.bin" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.vs/ProjectEvaluation/lgbf.projects.v10.bin" beforeDir="false" afterPath="$PROJECT_DIR$/.vs/ProjectEvaluation/lgbf.projects.v10.bin" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.vs/ProjectEvaluation/lgbf.strings.v10.bin" beforeDir="false" afterPath="$PROJECT_DIR$/.vs/ProjectEvaluation/lgbf.strings.v10.bin" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.vs/lgbf/DesignTimeBuild/.dtbcache.v2" beforeDir="false" afterPath="$PROJECT_DIR$/.vs/lgbf/DesignTimeBuild/.dtbcache.v2" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.vs/lgbf/FileContentIndex/c725cc81-6f60-4e13-bf8f-f9471a53656b.vsidx" beforeDir="false" afterPath="$PROJECT_DIR$/.vs/lgbf/FileContentIndex/c725cc81-6f60-4e13-bf8f-f9471a53656b.vsidx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.vs/lgbf/v18/.futdcache.v2" beforeDir="false" afterPath="$PROJECT_DIR$/.vs/lgbf/v18/.futdcache.v2" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.vs/lgbf/v18/.suo" beforeDir="false" afterPath="$PROJECT_DIR$/.vs/lgbf/v18/.suo" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.vs/lgbf/v18/DocumentLayout.backup.json" beforeDir="false" afterPath="$PROJECT_DIR$/.vs/lgbf/v18/DocumentLayout.backup.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.vs/lgbf/v18/DocumentLayout.json" beforeDir="false" afterPath="$PROJECT_DIR$/.vs/lgbf/v18/DocumentLayout.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/hub/Context.cs" beforeDir="false" afterPath="$PROJECT_DIR$/hub/Context.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/hub/Entity.cs" beforeDir="false" afterPath="$PROJECT_DIR$/hub/Entity.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/hub/EntityMgr.cs" beforeDir="false" afterPath="$PROJECT_DIR$/hub/EntityMgr.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/hub/RedisHandle.cs" beforeDir="false" afterPath="$PROJECT_DIR$/hub/RedisHandle.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/hub/hub.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/hub/hub.csproj" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/hub/DbHelper.cs" beforeDir="false" afterPath="$PROJECT_DIR$/hub/DbHelper.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/hub/MongodbProxy.cs" beforeDir="false" afterPath="$PROJECT_DIR$/hub/MongodbProxy.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/hub/OfflineMsg.cs" beforeDir="false" afterPath="$PROJECT_DIR$/hub/syncNtfMsg.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/hub/RedisHelp.cs" beforeDir="false" afterPath="$PROJECT_DIR$/hub/RedisHelp.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lgbf.sln.DotSettings.user" beforeDir="false" afterPath="$PROJECT_DIR$/lgbf.sln.DotSettings.user" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
