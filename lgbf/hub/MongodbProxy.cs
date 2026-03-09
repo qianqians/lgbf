@@ -41,7 +41,7 @@ public class MongodbProxy
             var indexModel = new CreateIndexModel<MongoDB.Bson.BsonDocument>(builder.Ascending(key), opt);
             collectionInst.Indexes.CreateOne(indexModel);
         }
-        catch(System.Exception e)
+        catch(Exception e)
         {
             Log.Err("create_index failed, {0}", e.Message);
         }
@@ -105,7 +105,7 @@ public class MongodbProxy
     {
         var mongoClient = GetMongoClient();
         var dbInst = mongoClient.GetDatabase(db);
-        var collectionInst = dbInst.GetCollection<MongoDB.Bson.BsonDocument>(collection) as MongoDB.Driver.IMongoCollection<MongoDB.Bson.BsonDocument>;
+        var collectionInst = dbInst.GetCollection<MongoDB.Bson.BsonDocument>(collection);
 
         var bsonQueryDoc = MongoDB.Bson.Serialization.BsonSerializer.Deserialize<MongoDB.Bson.BsonDocument>(bsonQuery);
         var bsonUpdateDoc = MongoDB.Bson.Serialization.BsonSerializer.Deserialize<MongoDB.Bson.BsonDocument>(bsonUpdate);
@@ -142,17 +142,11 @@ public class MongodbProxy
         }
         if (!string.IsNullOrEmpty(sort))
         {
-            if (ascending)
-            {
-                opt.Sort = Builders<MongoDB.Bson.BsonDocument>.Sort.Ascending(sort);
-            }
-            else
-            {
-                opt.Sort = Builders<MongoDB.Bson.BsonDocument>.Sort.Descending(sort);
-            }
+            opt.Sort = ascending ? Builders<MongoDB.Bson.BsonDocument>.Sort.Ascending(sort) : 
+                Builders<MongoDB.Bson.BsonDocument>.Sort.Descending(sort);
         }
 
-        return await collectionInst.FindAsync<MongoDB.Bson.BsonDocument>(bsonQueryDoc, opt);
+        return await collectionInst.FindAsync(bsonQueryDoc, opt);
     }
 
     public async ValueTask<int> Count(string db, string collection, byte[] bsonQuery)
