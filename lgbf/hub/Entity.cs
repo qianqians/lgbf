@@ -33,6 +33,12 @@ public interface IDataAgent<T> where T : IHostingData
     public void WriteBack();
 }
 
+public class DirtyData
+{
+    public required string Type;
+    public required string Guid;
+}
+
 internal class DataAgent<T> : IDataAgent<T> where T : IHostingData
 {
     private readonly Entity _entity;
@@ -47,7 +53,10 @@ internal class DataAgent<T> : IDataAgent<T> where T : IHostingData
     public void WriteBack()
     {
         _entity.Ctx.Redis.SetData(string.Format(RedisHelp.EntityStoreKey, T.Type(), _entity.Ctx.Guid), Data.Store().ToBson());
-        _entity.Ctx.Redis.PushList(RedisHelp.EntityStoreMongodbList, _entity.Ctx.Guid);
+        _entity.Ctx.Redis.PushList(RedisHelp.EntityStoreMongodbList, new DirtyData(){
+            Type = T.Type(),
+            Guid = _entity.Ctx.Guid
+        });
     }
 }
 

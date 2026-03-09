@@ -155,7 +155,7 @@ public class RedisHandle
         }
     }
 
-    public void PopList(string key, long count)
+    public async Task<T?> PopList<T>(string key)
     {
         while (true)
         {
@@ -163,11 +163,16 @@ public class RedisHandle
             {
                 if (_database == null)
                 {
-                    return;
+                    return default(T);
                 }
                 
-                _database.ListRightPopAsync(key, count);
-                return;
+                var data = await _database.ListLeftPopAsync(key);
+                if (data.IsNull)
+                {
+                    return default(T);
+                }
+                
+                return JsonConvert.DeserializeObject<T>(data.ToString());
             }
             catch (RedisTimeoutException e)
             {

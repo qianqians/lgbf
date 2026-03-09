@@ -5,15 +5,6 @@ public class MongodbProxy
 {
     private readonly MongoClient _client;
 
-    public MongodbProxy(string ip, short port)
-	{
-        var setting = new MongoClientSettings()
-        {
-            Server = new MongoServerAddress(ip, port)
-        };
-        _client = new MongoClient(setting);
-    }
-
     public MongodbProxy(string url)
     {
         var mongoUrl = new MongoUrl(url);
