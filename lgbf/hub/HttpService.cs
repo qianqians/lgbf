@@ -57,17 +57,12 @@ public class Startup {
             }
             
             var segments = context.Request.Path.Value!.TrimStart('/').Split('/');
-            var version = segments.Length > 0 ? segments[0] : "unknown";
-            var endpoint = segments.Length > 1 ? segments[1] : "unknown";
+            var endpoint = segments.Length > 0 ? segments[0] : "unknown";
 
             Func<HttpRsp, Task>? cb = null;
-            if (context.Request.Method == HttpMethods.Get)
+            if (context.Request.Method == HttpMethods.Post)
             {
-                HttpService.TryGetGetCallback(version, endpoint, out cb);
-            }
-            else if (context.Request.Method == HttpMethods.Post)
-            {
-                HttpService.TryGetPostCallback(version, endpoint, out cb);
+                HttpService.TryGetPostCallback(endpoint, out cb);
             }
             else if (context.Request.Method == HttpMethods.Options)
             {
@@ -116,12 +111,7 @@ public class Startup {
 
 public class HttpService
 {
-    private class VerHandle
-    {
-        public readonly Dictionary<string, Func<HttpRsp, Task>> GetCb = new();
-        public readonly Dictionary<string, Func<HttpRsp, Task>> PostCb = new();
-    }
-    private static readonly Dictionary<string, VerHandle> VerCb = new();
+    private static readonly Dictionary<string, Func<HttpRsp, Task>> PostCb = new();
 
     private readonly int _port;
     private IHost? _h;
@@ -141,74 +131,14 @@ public class HttpService
         return Headers;
     }
     
-    public static void Get(string ver, string uri, Func<HttpRsp, Task> callback)
+    public static void Post(string uri, Func<HttpRsp, Task> callback)
     {
-        if (string.IsNullOrEmpty(ver))
-        {
-            Log.Err("process http get req uri:{0} with no ver info", uri);
-            return;
-        }
-        
-        if (!VerCb.TryGetValue(ver, out var cbDict))
-        {
-            cbDict = new VerHandle();
-            VerCb.Add(ver, cbDict);
-        }
-        
-        cbDict.GetCb.Add(ver, callback);
+        PostCb.Add(uri, callback);
     }
 
-    public static void Post(string ver, string uri, Func<HttpRsp, Task> callback)
+    public static bool TryGetPostCallback(string uri, out Func<HttpRsp, Task>? cb)
     {
-        if (string.IsNullOrEmpty(ver))
-        {
-            Log.Err("process http get req uri:{0} with no ver info", uri);
-            return;
-        }
-
-        if (!VerCb.TryGetValue(ver, out var cbDict))
-        {
-            cbDict = new VerHandle();
-            VerCb.Add(ver, cbDict);
-        }
-
-        cbDict.PostCb.Add(ver, callback);
-    }
-
-    public static bool TryGetGetCallback(string ver, string uri, out Func<HttpRsp, Task>? cb)
-    {
-        cb = null;
-        if (string.IsNullOrEmpty(ver))
-        {
-            Log.Err("process http get req uri:{0} with no ver info", uri);
-            return false;
-        }
-        
-        if (!VerCb.TryGetValue(ver, out var cbDict))
-        {
-            Log.Err("process http get req uri:{0} with no ver cb", uri);
-            return false;
-        }
-
-        return cbDict.GetCb.TryGetValue(uri, out cb);
-    }
-
-    public static bool TryGetPostCallback(string ver, string uri, out Func<HttpRsp, Task>? cb)
-    {
-        cb = null;
-        if (string.IsNullOrEmpty(ver))
-        {
-            Log.Err("process http get req uri:{0} with no ver info", uri);
-            return false;
-        }
-        
-        if (!VerCb.TryGetValue(ver, out var cbDict))
-        {
-            Log.Err("process http get req uri:{0} with no ver cb", uri);
-            return false;
-        }
-
-        return cbDict.PostCb.TryGetValue(uri, out cb);
+        return PostCb.TryGetValue(uri, out cb);
     }
 
     private void RunServerAsync()

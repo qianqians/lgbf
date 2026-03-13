@@ -1,0 +1,8 @@
+syntax = "proto3"; 
+
+message User {
+  int32 id = 1;          // 整型字段，编号 1（唯一且不可随意修改）
+  string name = 2;       // 字符串字段，编号 2
+  bool is_vip = 3;       // 布尔字段，编号 3
+  double balance = 4;    // 浮点字段，编号 4
+}
