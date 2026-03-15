@@ -8,7 +8,7 @@
 
     <ItemGroup>
       <FrameworkReference Include="Microsoft.AspNetCore.App" />
-      <PackageReference Include="Google.ProtocolBuffers" Version="2.4.1.555" />
+      <PackageReference Include="Google.Protobuf" Version="3.34.0" />
       <PackageReference Include="MongoDB.Bson" Version="3.7.0" />
       <PackageReference Include="MongoDB.Driver" Version="3.7.0" />
       <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />

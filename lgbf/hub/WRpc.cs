@@ -1,30 +1,126 @@
-using Google.ProtocolBuffers;
+using Google.Protobuf;
 
 namespace hub;
 
-public class WRpc
+public class WRpc(HttpRsp rsp)
 {
-    private readonly Dictionary<string, Action<decimal>> callbackNtf = new();
-    private readonly Dictionary<string, Func<decimal, decimal>> callbackRequest = new();
-    private readonly Dictionary<string, Func<decimal, Task<decimal>>> callbackAsyncRequest = new();
+    private readonly Dictionary<string, Delegate> callbackNtf = new();
 
-    public void RegisterNtf(Action<decimal> callback)
+    public void RegisterNtf<T>(Action<T> callback) where T : IMessage<T>, new()
     {
-        callbackNtf.Add(callback.Method.Name, callback);
+        var parser = new MessageParser<T>(() => new T());
+        callbackNtf.Add(typeof(T).Name, async (byte[] data) =>
+        {
+            var r = new Response();
+            try
+            {
+                var t = parser.ParseFrom(data);
+                callback(t);
+
+                r.CallGuid = string.Empty;
+                r.ErrMsg = "OK";
+                r.Content = ByteString.CopyFromUtf8("OK");
+            }
+            catch (Exception ex)
+            {
+                r.CallGuid = string.Empty;
+                r.ErrMsg = "error";
+                r.Content = ByteString.CopyFromUtf8(ex.Message);
+            }
+            finally
+            {
+                await rsp.Response(Microsoft.AspNetCore.Http.StatusCodes.Status200OK, HttpService.BuildCrossHeaders(), r.ToByteArray());
+            }
+        });
+    }
+    
+    public void RegisterAsyncNtf<T>(Func<T, Task> callback) where T : IMessage<T>, new()
+    {
+        var parser = new MessageParser<T>(() => new T());
+        callbackNtf.Add(typeof(T).Name, async (byte[] data) =>
+        {
+            var r = new Response();
+            try
+            {
+                var t = parser.ParseFrom(data);
+                await callback(t);
+
+                r.CallGuid = string.Empty;
+                r.ErrMsg = "OK";
+                r.Content = ByteString.CopyFromUtf8("OK");
+            }
+            catch (Exception ex)
+            {
+                r.CallGuid = string.Empty;
+                r.ErrMsg = "error";
+                r.Content = ByteString.CopyFromUtf8(ex.Message);
+            }
+            finally
+            {
+                await rsp.Response(Microsoft.AspNetCore.Http.StatusCodes.Status200OK, HttpService.BuildCrossHeaders(), r.ToByteArray());
+            }
+        });
     }
 
-    public void RegisterRequest(Func<decimal, decimal> callback)
+    public void RegisterRequest<T1, T2>(Func<T1, T2> callback) 
+        where T1 : IMessage<T1>, new()
+        where T2 : IMessage<T2>, new()
     {
-        callbackRequest.Add(callback.Method.Name, callback);
+        var parser1 = new MessageParser<T1>(() => new T1());
+        var parser2 = new MessageParser<T2>(() => new T2());
+        callbackNtf.Add(typeof(T1).Name, async (string callbackId, byte[] data) =>
+        {
+            var r = new Response();
+            try
+            {
+                var t = parser1.ParseFrom(data);
+                var back = callback(t);
+
+                r.CallGuid = callbackId;
+                r.ErrMsg = "OK";
+                r.Content = back.ToByteString();
+            }
+            catch (Exception ex)
+            {
+                r.CallGuid = string.Empty;
+                r.ErrMsg = "error";
+                r.Content = ByteString.CopyFromUtf8(ex.Message);
+            }
+            finally
+            {
+                await rsp.Response(Microsoft.AspNetCore.Http.StatusCodes.Status200OK, HttpService.BuildCrossHeaders(), r.ToByteArray());
+            }
+        });
     }
 
-    public void RegisterAsyncRequest(Func<decimal, Task<decimal>> callback)
+    public void RegisterAsyncRequest<T1, T2>(Func<T1, Task<T2>> callback) 
+        where T1 : IMessage<T1>, new()
+        where T2 : IMessage<T2>, new()
     {
-        callbackAsyncRequest.Add(callback.Method.Name, callback);
-    }
+        var parser1 = new MessageParser<T1>(() => new T1());
+        var parser2 = new MessageParser<T2>(() => new T2());
+        callbackNtf.Add(typeof(T1).Name, async (string callbackId, byte[] data) =>
+        {
+            var r = new Response();
+            try
+            {
+                var t = parser1.ParseFrom(data);
+                var back = await callback(t);
 
-    public void CallNtf(T argv) where T : global::ProtoBuf.IExtensible
-    {
-        callbackNtf.TryGetValue(T)
+                r.CallGuid = callbackId;
+                r.ErrMsg = "OK";
+                r.Content = back.ToByteString();
+            }
+            catch (Exception ex)
+            {
+                r.CallGuid = string.Empty;
+                r.ErrMsg = "error";
+                r.Content = ByteString.CopyFromUtf8(ex.Message);
+            }
+            finally
+            {
+                await rsp.Response(Microsoft.AspNetCore.Http.StatusCodes.Status200OK, HttpService.BuildCrossHeaders(), r.ToByteArray());
+            }
+        });
     }
 }
