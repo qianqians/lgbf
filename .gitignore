@@ -59,3 +59,9 @@ nunit-*.xml
 
 .idea/
 .vs/
+
+Library/
+Temp/
+Obj/
+Logs/
+UserSettings/
