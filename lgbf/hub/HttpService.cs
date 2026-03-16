@@ -15,17 +15,17 @@ using System.Text.RegularExpressions;
 
 namespace hub;
 
-public class HttpRsp(HttpResponse rsp)
+public class HttpRsp(byte[]? data, HttpResponse rsp)
 {
+    public byte[]? Data => data;
+    
     /*Microsoft.AspNetCore.Http.StatusCodes*/
     public ValueTask Response(int status, Dictionary<string, string> headers, byte[] buf) {
         try {
             foreach (var h in headers) {
                 rsp.Headers[h.Key] = h.Value;
             }
-
             rsp.StatusCode = status;
-
             return rsp.Body.WriteAsync(buf);
 
         } catch (Exception ex) {
@@ -92,7 +92,7 @@ public class Startup {
                         offset += len;
                     }
                 }
-                await cb(new HttpRsp(context.Response));
+                await cb(new HttpRsp(buf, context.Response));
             } catch (Exception ex) {
                 Log.Err("process http req ex:{0}", ex);
             } finally {

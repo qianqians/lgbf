@@ -2,14 +2,32 @@ using Google.Protobuf;
 
 namespace hub;
 
-public class WRpc(HttpRsp rsp)
+public class WRpc
 {
     private readonly Dictionary<string, Delegate> callbackNtf = new();
 
+    public WRpc(string uri)
+    {
+        HttpService.Post(uri, (rsp) =>
+        {
+            var req = Request.Parser.ParseFrom(rsp.Data);
+            if (req != null)
+            {
+                callbackNtf.TryGetValue(req.ProtoName, out var callback);
+                var t = callback?.DynamicInvoke(rsp, rsp.Data);
+                if (t != null)
+                {
+                    return (Task)t;
+                }
+            }
+            return Task.FromResult("rpc request failed!");
+        });
+    }
+        
     public void RegisterNtf<T>(Action<T> callback) where T : IMessage<T>, new()
     {
         var parser = new MessageParser<T>(() => new T());
-        callbackNtf.Add(typeof(T).Name, async (byte[] data) =>
+        callbackNtf.Add(typeof(T).Name, async (HttpRsp rsp, byte[] data) =>
         {
             var r = new Response();
             try
@@ -37,7 +55,7 @@ public class WRpc(HttpRsp rsp)
     public void RegisterAsyncNtf<T>(Func<T, Task> callback) where T : IMessage<T>, new()
     {
         var parser = new MessageParser<T>(() => new T());
-        callbackNtf.Add(typeof(T).Name, async (byte[] data) =>
+        callbackNtf.Add(typeof(T).Name, async (HttpRsp rsp, byte[] data) =>
         {
             var r = new Response();
             try
@@ -68,7 +86,7 @@ public class WRpc(HttpRsp rsp)
     {
         var parser1 = new MessageParser<T1>(() => new T1());
         var parser2 = new MessageParser<T2>(() => new T2());
-        callbackNtf.Add(typeof(T1).Name, async (string callbackId, byte[] data) =>
+        callbackNtf.Add(typeof(T1).Name, async (HttpRsp rsp, byte[] data) =>
         {
             var r = new Response();
             try
@@ -76,13 +94,13 @@ public class WRpc(HttpRsp rsp)
                 var t = parser1.ParseFrom(data);
                 var back = callback(t);
 
-                r.CallGuid = callbackId;
+                r.CallGuid = r.CallGuid;
                 r.ErrMsg = "OK";
                 r.Content = back.ToByteString();
             }
             catch (Exception ex)
             {
-                r.CallGuid = string.Empty;
+                r.CallGuid = r.CallGuid;
                 r.ErrMsg = "error";
                 r.Content = ByteString.CopyFromUtf8(ex.Message);
             }
@@ -99,7 +117,7 @@ public class WRpc(HttpRsp rsp)
     {
         var parser1 = new MessageParser<T1>(() => new T1());
         var parser2 = new MessageParser<T2>(() => new T2());
-        callbackNtf.Add(typeof(T1).Name, async (string callbackId, byte[] data) =>
+        callbackNtf.Add(typeof(T1).Name, async (HttpRsp rsp, byte[] data) =>
         {
             var r = new Response();
             try
@@ -107,13 +125,13 @@ public class WRpc(HttpRsp rsp)
                 var t = parser1.ParseFrom(data);
                 var back = await callback(t);
 
-                r.CallGuid = callbackId;
+                r.CallGuid = r.CallGuid;
                 r.ErrMsg = "OK";
                 r.Content = back.ToByteString();
             }
             catch (Exception ex)
             {
-                r.CallGuid = string.Empty;
+                r.CallGuid = r.CallGuid;
                 r.ErrMsg = "error";
                 r.Content = ByteString.CopyFromUtf8(ex.Message);
             }
