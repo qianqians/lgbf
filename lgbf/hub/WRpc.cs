@@ -14,7 +14,7 @@ public class WRpc
             if (req != null)
             {
                 callbackNtf.TryGetValue(req.ProtoName, out var callback);
-                var t = callback?.DynamicInvoke(rsp, rsp.Data);
+                var t = callback?.DynamicInvoke(rsp, req.CallGuid, req.Content);
                 if (t != null)
                 {
                     return (Task)t;
@@ -27,7 +27,7 @@ public class WRpc
     public void RegisterNtf<T>(Action<T> callback) where T : IMessage<T>, new()
     {
         var parser = new MessageParser<T>(() => new T());
-        callbackNtf.Add(typeof(T).Name, async (HttpRsp rsp, byte[] data) =>
+        callbackNtf.Add(typeof(T).Name, async (HttpRsp rsp, string callGuid, byte[] data) =>
         {
             var r = new Response();
             try
@@ -35,13 +35,13 @@ public class WRpc
                 var t = parser.ParseFrom(data);
                 callback(t);
 
-                r.CallGuid = string.Empty;
+                r.CallGuid = callGuid;
                 r.ErrMsg = "OK";
                 r.Content = ByteString.CopyFromUtf8("OK");
             }
             catch (Exception ex)
             {
-                r.CallGuid = string.Empty;
+                r.CallGuid = callGuid;
                 r.ErrMsg = "error";
                 r.Content = ByteString.CopyFromUtf8(ex.Message);
             }
@@ -55,7 +55,7 @@ public class WRpc
     public void RegisterAsyncNtf<T>(Func<T, Task> callback) where T : IMessage<T>, new()
     {
         var parser = new MessageParser<T>(() => new T());
-        callbackNtf.Add(typeof(T).Name, async (HttpRsp rsp, byte[] data) =>
+        callbackNtf.Add(typeof(T).Name, async (HttpRsp rsp, string callGuid, byte[] data) =>
         {
             var r = new Response();
             try
@@ -63,13 +63,13 @@ public class WRpc
                 var t = parser.ParseFrom(data);
                 await callback(t);
 
-                r.CallGuid = string.Empty;
+                r.CallGuid = callGuid;
                 r.ErrMsg = "OK";
                 r.Content = ByteString.CopyFromUtf8("OK");
             }
             catch (Exception ex)
             {
-                r.CallGuid = string.Empty;
+                r.CallGuid = callGuid;
                 r.ErrMsg = "error";
                 r.Content = ByteString.CopyFromUtf8(ex.Message);
             }
@@ -86,7 +86,7 @@ public class WRpc
     {
         var parser1 = new MessageParser<T1>(() => new T1());
         var parser2 = new MessageParser<T2>(() => new T2());
-        callbackNtf.Add(typeof(T1).Name, async (HttpRsp rsp, byte[] data) =>
+        callbackNtf.Add(typeof(T1).Name, async (HttpRsp rsp, string callGuid, byte[] data) =>
         {
             var r = new Response();
             try
@@ -94,13 +94,13 @@ public class WRpc
                 var t = parser1.ParseFrom(data);
                 var back = callback(t);
 
-                r.CallGuid = r.CallGuid;
+                r.CallGuid = callGuid;
                 r.ErrMsg = "OK";
                 r.Content = back.ToByteString();
             }
             catch (Exception ex)
             {
-                r.CallGuid = r.CallGuid;
+                r.CallGuid = callGuid;
                 r.ErrMsg = "error";
                 r.Content = ByteString.CopyFromUtf8(ex.Message);
             }
@@ -117,7 +117,7 @@ public class WRpc
     {
         var parser1 = new MessageParser<T1>(() => new T1());
         var parser2 = new MessageParser<T2>(() => new T2());
-        callbackNtf.Add(typeof(T1).Name, async (HttpRsp rsp, byte[] data) =>
+        callbackNtf.Add(typeof(T1).Name, async (HttpRsp rsp, string callGuid, byte[] data) =>
         {
             var r = new Response();
             try
@@ -125,13 +125,13 @@ public class WRpc
                 var t = parser1.ParseFrom(data);
                 var back = await callback(t);
 
-                r.CallGuid = r.CallGuid;
+                r.CallGuid = callGuid;
                 r.ErrMsg = "OK";
                 r.Content = back.ToByteString();
             }
             catch (Exception ex)
             {
-                r.CallGuid = r.CallGuid;
+                r.CallGuid = callGuid;
                 r.ErrMsg = "error";
                 r.Content = ByteString.CopyFromUtf8(ex.Message);
             }
