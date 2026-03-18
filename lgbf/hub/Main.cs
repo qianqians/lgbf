@@ -12,13 +12,20 @@ public class Config
 
 public class Main
 {
-    private static RedisHandle? _redis;
-    private static MongodbProxy? _mongo;
+    public static RedisHandle? Redis
+    {
+        get; private set;
+    }
+
+    public static MongodbProxy? Mongo
+    {
+        get; private set;
+    }
     
     public static async Task Run(Config cfg)
     {
-        _redis = new RedisHandle(cfg.RedisUrl, cfg.RedisPwd);
-        _mongo = new MongodbProxy(cfg.MongoUrl);
+        Redis = new RedisHandle(cfg.RedisUrl, cfg.RedisPwd);
+        Mongo = new MongodbProxy(cfg.MongoUrl);
         
         TimerService.Ins!.AddTickTime(5 * 60 * 1000, Save);
         
@@ -30,40 +37,48 @@ public class Main
 
     private static async void Save(long _)
     {
-        if (_redis == null)
+        try
         {
-            goto back;
+            if (Redis == null)
+            {
+                goto back;
+            }
+
+            if (Mongo == null)
+            {
+                goto back;
+            }
+
+            for (var i = 0; i < 10; i++)
+            {
+                var data = await Redis.PopList<DirtyData>(RedisHelp.EntityStoreMongodbList);
+                if (data == null)
+                {
+                    break;
+                }
+
+                var data1 = await Redis.GetData(string.Format(RedisHelp.EntityStoreKey, data.Type, data.Guid));
+                if (data1 == null)
+                {
+                    break;
+                }
+
+                var query = new DBQueryHelper();
+                query.Condition("player_guid", data.Guid);
+                var result = await Mongo.Update("game", "player", query.query().ToBson(), data1, true);
+                if (!result)
+                {
+                    Log.Err("Save mongodb error");
+                    break;
+                }
+            }
+
+            back:
+            TimerService.Ins!.AddTickTime(5 * 60 * 1000, Save);
         }
-        if (_mongo == null)
+        catch (Exception ex)
         {
-            goto back;
+            Log.Err(ex.Message);
         }
-        
-        for (var i = 0; i < 10; i++)
-        {
-            var data = await _redis.PopList<DirtyData>(RedisHelp.EntityStoreMongodbList);
-            if (data == null)
-            {
-                break;
-            }
-            
-            var data1 = await _redis.GetData(string.Format(RedisHelp.EntityStoreKey, data.Type, data.Guid));
-            if (data1 == null)
-            {
-                break;
-            }
-            
-            var query = new DBQueryHelper();
-            query.Condition("player_guid", data.Guid);
-            var result = await _mongo.Update("game", "player", query.query().ToBson(), data1, true);
-            if (!result)
-            {
-                Log.Err("Save mongodb error");
-                break;
-            }
-        }
-        
-        back:
-        TimerService.Ins!.AddTickTime(5 * 60 * 1000, Save);
     }
 }

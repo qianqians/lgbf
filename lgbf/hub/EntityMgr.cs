@@ -28,7 +28,7 @@ public class EntityMgr
             foreach (var entityId in lockEntities)
             {
                 var token = Guid.NewGuid().ToString();
-                var lockSuccess = await ctx.Redis.TryLock(string.Format(RedisHelp.EntityLockKey, entityId), token, 10_000);
+                var lockSuccess = await ctx.Redis!.TryLock(string.Format(RedisHelp.EntityLockKey, entityId), token, 10_000);
                 if (lockSuccess)
                 {
                     unlockList.Add(async () => { await ctx.Redis.UnLock(entityId, token); });

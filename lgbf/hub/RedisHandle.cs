@@ -4,6 +4,8 @@ using StackExchange.Redis;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using MongoDB.Bson;
+using MongoDB.Bson.Serialization;
 
 namespace hub;
 
@@ -107,12 +109,14 @@ public class RedisHandle
 
     public async ValueTask<T?> GetData<T>(string key)
     {
-        string? json= await GetStrData(key);
-        if (string.IsNullOrEmpty(json))
+        byte[]? bson= await GetData(key);
+        if (bson == null || bson.Length <= 0)
         {
             return default(T);
         }
-        return JsonConvert.DeserializeObject<T>(json);
+
+        var doc = MongoDB.Bson.Serialization.BsonSerializer.Deserialize<BsonDocument>(bson);
+        return BsonSerializer.Deserialize<T>(doc);
     }
 
     public bool DelData(string key)

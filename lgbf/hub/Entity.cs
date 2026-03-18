@@ -52,8 +52,8 @@ internal class DataAgent<T> : IDataAgent<T> where T : IHostingData
     
     public void WriteBack()
     {
-        _entity.Ctx.Redis.SetData(string.Format(RedisHelp.EntityStoreKey, T.Type(), _entity.Ctx.Guid), Data.Store().ToBson());
-        _entity.Ctx.Redis.PushList(RedisHelp.EntityStoreMongodbList, new DirtyData(){
+        _entity.Ctx.Redis!.SetData(string.Format(RedisHelp.EntityStoreKey, T.Type(), _entity.Ctx.Guid), Data.Store().ToBson());
+        _entity.Ctx.Redis!.PushList(RedisHelp.EntityStoreMongodbList, new DirtyData(){
             Type = T.Type(),
             Guid = _entity.Ctx.Guid
         });
@@ -64,7 +64,7 @@ public record Entity(Context Ctx)
 {
     public async Task<IDataAgent<T>?> Get<T>() where T : IHostingData
     {
-        var bin = await Ctx.Redis.GetData(string.Format(RedisHelp.EntityStoreKey, T.Type(), Ctx.Guid));
+        var bin = await Ctx.Redis!.GetData(string.Format(RedisHelp.EntityStoreKey, T.Type(), Ctx.Guid));
         var doc = MongoDB.Bson.Serialization.BsonSerializer.Deserialize<BsonDocument>(bin);
         var data = T.Load(doc);
         if (data != null)
@@ -78,7 +78,7 @@ public record Entity(Context Ctx)
 
         var query = new DBQueryHelper();
         query.Condition("player_guid", Ctx.Guid);
-        var doc1 = await Ctx.Mongo.Find(
+        var doc1 = await Ctx.Mongo!.Find(
             "game", "offline_msg", query.query().ToBson(),
             0, 0, "", false);
         if (doc1 == null || doc1.Count == 0)
