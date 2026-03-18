@@ -1,0 +1,2 @@
+protoc --csharp_out=../hub  --proto_path=../underlying  ../underlying/underlying.proto
+protoc --csharp_out=../../gem/unity/Assets/Script/ServerSDK  --proto_path=../underlying  ../underlying/underlying.proto
