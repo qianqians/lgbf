@@ -41,12 +41,12 @@ public class Main
         {
             if (Redis == null)
             {
-                goto back;
+                throw new Exception("internal error! redis is nil");
             }
 
             if (Mongo == null)
             {
-                goto back;
+                throw new Exception("internal error! mongo is nil");
             }
 
             for (var i = 0; i < 10; i++)
