@@ -1,4 +1,5 @@
 using System;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using MongoDB.Bson;
@@ -161,14 +162,13 @@ public class RedisHandle
 
     public async ValueTask<T?> GetData<T>(string key)
     {
-        byte[]? bson= await GetData(key);
-        if (bson == null || bson.Length <= 0)
+        byte[]? data = await GetData(key);
+        if (data == null || data.Length <= 0)
         {
             return default(T);
         }
 
-        var doc = MongoDB.Bson.Serialization.BsonSerializer.Deserialize<BsonDocument>(bson);
-        return BsonSerializer.Deserialize<T>(doc);
+        return JsonConvert.DeserializeObject<T>(Encoding.UTF8.GetString(data));
     }
 
     public bool DelData(string key)

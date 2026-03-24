@@ -12,6 +12,7 @@ public class Config
 
 public class Main
 {
+    private const int SaveIntervalMs = 5 * 60 * 1000;
     private const int SaveBatchSize = 64;
 
     public static RedisHandle? Redis
@@ -25,13 +26,14 @@ public class Main
     }
 
     private static HttpService? _service;
+    private static int _saveRunning;
     
     public static void Start(Config cfg)
     {
         Redis = new RedisHandle(cfg.RedisUrl, cfg.RedisPwd);
         Mongo = new MongodbProxy(cfg.MongoUrl);
         
-        TimerService.Ins!.AddTickTime(5 * 60 * 1000, Save);
+        TimerService.Ins!.AddTickTime(SaveIntervalMs, Save);
         
         _service = new HttpService(cfg.Host, cfg.Port);
         _service.Run();
@@ -54,6 +56,23 @@ public class Main
     {
         try
         {
+            await SaveAsync();
+        }
+        catch (Exception ex)
+        {
+            Log.Err("Save entity error:{0}", ex);
+        }
+    }
+
+    private static async Task SaveAsync()
+    {
+        if (Interlocked.Exchange(ref _saveRunning, 1) != 0)
+        {
+            return;
+        }
+
+        try
+        {
             if (Redis == null)
             {
                 throw new Exception("internal error! redis is nil");
@@ -64,6 +83,7 @@ public class Main
                 throw new Exception("internal error! mongo is nil");
             }
 
+            var dirtyItems = new List<(DirtyData Dirty, byte[] Data, string StoreKey, string DirtyFlagKey)>(SaveBatchSize);
             for (var i = 0; i < SaveBatchSize; i++)
             {
                 var data = await Redis.PopList<DirtyData>(RedisHelp.EntityStoreMongodbList);
@@ -82,34 +102,62 @@ public class Main
                     continue;
                 }
 
-                var query = new DBQueryHelper();
-                query.Condition("player_guid", data.Guid);
-                var update = new UpdateDataHelper();
-                update.Set(MongoDB.Bson.Serialization.BsonSerializer.Deserialize<BsonDocument>(data1));
+                dirtyItems.Add((data, data1, storeKey, dirtyFlagKey));
+            }
 
-                var result = await Mongo.Update("game", data.Type, query.query().ToBson(), update.Data().ToBson(), true);
+            foreach (var batch in dirtyItems.GroupBy(item => item.Dirty.Type))
+            {
+                var latestItems = new Dictionary<string, (DirtyData Dirty, byte[] Data, string StoreKey, string DirtyFlagKey)>();
+                foreach (var item in batch)
+                {
+                    latestItems[item.Dirty.Guid] = item;
+                }
+
+                var updateItems = new List<BatchUpdateItem>(latestItems.Count);
+                foreach (var item in latestItems.Values)
+                {
+                    var query = new DBQueryHelper();
+                    query.Condition("player_guid", item.Dirty.Guid);
+                    var update = new UpdateDataHelper();
+                    update.Set(MongoDB.Bson.Serialization.BsonSerializer.Deserialize<BsonDocument>(item.Data));
+                    updateItems.Add(new BatchUpdateItem
+                    {
+                        Query = query.query().ToBson(),
+                        Update = update.Data().ToBson()
+                    });
+                }
+
+                var result = await Mongo.BulkUpdate("game", batch.Key, updateItems, true);
                 if (!result)
                 {
                     Log.Err("Save mongodb error");
+                    foreach (var item in latestItems.Values)
+                    {
+                        await Redis.PushList(RedisHelp.EntityStoreMongodbList, item.Dirty);
+                    }
                     continue;
                 }
 
-                Redis.DelData(dirtyFlagKey);
-                var latestData = await Redis.GetData(storeKey);
-                if (latestData != null && !latestData.SequenceEqual(data1))
+                foreach (var item in latestItems.Values)
                 {
-                    await Redis.SetData(dirtyFlagKey, 1, 10 * 60 * 1000);
-                    await Redis.PushList(RedisHelp.EntityStoreMongodbList, data);
+                    Redis.DelData(item.DirtyFlagKey);
+                    var latestData = await Redis.GetData(item.StoreKey);
+                    if (latestData != null && !latestData.SequenceEqual(item.Data))
+                    {
+                        await Redis.SetData(item.DirtyFlagKey, 1, 10 * 60 * 1000);
+                        await Redis.PushList(RedisHelp.EntityStoreMongodbList, item.Dirty);
+                    }
                 }
             }
         }
         catch (Exception ex)
         {
-            Log.Err(ex.Message);
+            Log.Err("SaveAsync:{0}", ex);
         }
         finally
         {
-            TimerService.Ins!.AddTickTime(5 * 60 * 1000, Save);
+            Volatile.Write(ref _saveRunning, 0);
+            TimerService.Ins!.AddTickTime(SaveIntervalMs, Save);
         }
     }
 }

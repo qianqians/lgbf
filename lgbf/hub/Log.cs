@@ -5,6 +5,8 @@ namespace hub;
 
 public class Log
 {
+    private static readonly object SyncRoot = new();
+
     public enum EnLogMode
     {
         Trace = 0,
@@ -60,7 +62,7 @@ public class Log
         var startTime = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
         var time = startTime.AddMilliseconds(tmptime);
 
-        lock (logFile)
+        lock (SyncRoot)
         {
             var realLogFile = $"{logPath}/{logFile}";
             {

@@ -1,6 +1,12 @@
 ﻿using MongoDB.Driver;
 namespace hub;
 
+public sealed class BatchUpdateItem
+{
+    public required byte[] Query;
+    public required byte[] Update;
+}
+
 public class MongodbProxy
 {
     private readonly MongoClient _client;
@@ -92,6 +98,26 @@ public class MongodbProxy
 
         return true;
 	}
+
+    public async ValueTask<bool> BulkUpdate(string db, string collection, IReadOnlyList<BatchUpdateItem> items, bool upsert)
+    {
+        if (items.Count == 0)
+        {
+            return true;
+        }
+
+        var collectionInst = GetCollection(db, collection);
+        var models = new List<WriteModel<MongoDB.Bson.BsonDocument>>(items.Count);
+        foreach (var item in items)
+        {
+            var query = new BsonDocumentFilterDefinition<MongoDB.Bson.BsonDocument>(Deserialize(item.Query));
+            var update = new BsonDocumentUpdateDefinition<MongoDB.Bson.BsonDocument>(Deserialize(item.Update));
+            models.Add(new UpdateOneModel<MongoDB.Bson.BsonDocument>(query, update) { IsUpsert = upsert });
+        }
+
+        await collectionInst.BulkWriteAsync(models, new BulkWriteOptions { IsOrdered = false });
+        return true;
+    }
 
     public async ValueTask<MongoDB.Bson.BsonDocument> FindAndModify(string db, string collection, byte[] bsonQuery, byte[] bsonUpdate, bool isNew, bool upsert)
     {
