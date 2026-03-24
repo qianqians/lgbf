@@ -1,23 +1,22 @@
 ﻿using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.IO;
-using System.Threading.Tasks;
-using Microsoft.Extensions.Hosting;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.AspNetCore.Server.Kestrel.Core;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Http;
-using System.Buffers;
 using System.Threading;
-using System.Text;
-using System.Text.RegularExpressions;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 
 namespace hub;
 
-public class HttpRsp(byte[]? data, HttpResponse rsp)
+public class HttpRsp(byte[]? data, int length, HttpResponse rsp)
 {
     public byte[]? Data => data;
+    public int Length => length;
     
     /*Microsoft.AspNetCore.Http.StatusCodes*/
     public ValueTask Response(int status, Dictionary<string, string> headers, byte[] buf) {
@@ -37,6 +36,8 @@ public class HttpRsp(byte[]? data, HttpResponse rsp)
 }
 
 public class Startup {
+    private static readonly byte[] EmptyBody = [];
+
     public void ConfigureServices(IServiceCollection services) {
     }
 
@@ -71,7 +72,7 @@ public class Startup {
                     context.Response.Headers[h.Key] = h.Value;
                 }
                 context.Response.StatusCode = StatusCodes.Status200OK;
-                context.Response.Body.Write(Encoding.UTF8.GetBytes(""));
+                await context.Response.Body.WriteAsync(EmptyBody);
                 return;
             }
             if (cb == null) {
@@ -79,20 +80,20 @@ public class Startup {
             }
 
             byte[]? buf = null;
+            var bodyLength = 0;
             try {
                 if (context.Request.ContentLength != null) {
                     var length = (int)context.Request.ContentLength;
                     buf = ArrayPool<byte>.Shared.Rent(length);
-                    var offset = 0;
-                    while (true) {
-                        var len = await context.Request.Body.ReadAsync(buf, offset, length - offset);
-                        if (len == 0) {
+                    while (bodyLength < length) {
+                        var len = await context.Request.Body.ReadAsync(buf.AsMemory(bodyLength, length - bodyLength));
+                        if (len <= 0) {
                             break;
                         }
-                        offset += len;
+                        bodyLength += len;
                     }
                 }
-                await cb(new HttpRsp(buf, context.Response));
+                await cb(new HttpRsp(buf, bodyLength, context.Response));
             } catch (Exception ex) {
                 Log.Err("process http req ex:{0}", ex);
             } finally {
