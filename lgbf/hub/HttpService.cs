@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Buffers;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -37,24 +38,27 @@ public class HttpRsp(byte[]? data, int length, HttpResponse rsp)
 
 public class Startup {
     private static readonly byte[] EmptyBody = [];
+    private static readonly double TickToMilliseconds = 1000.0 / Stopwatch.Frequency;
 
     public void ConfigureServices(IServiceCollection services) {
     }
 
     private static int _lCount = 0;
-    private static long _receiveStatTick = TimerService.Tick + 1000;
-    private static long _lastStatTick = TimerService.Tick + 1000;
+    private static long _receiveStatTick = Stopwatch.GetTimestamp() + Stopwatch.Frequency;
+    private static long _lastStatTick = Stopwatch.GetTimestamp();
     public void Configure(IApplicationBuilder app) {
         app.Run(async (context) =>
         {
-            var begin = TimerService.Tick;
+            var begin = Stopwatch.GetTimestamp();
 
             var count = Interlocked.Add(ref _lCount, 1);
-            if (TimerService.Tick >= _receiveStatTick) {
-                Interlocked.And(ref _lCount, -count);
-                Log.Info("Connect statistics: {0} messages in {1} ms", count, TimerService.Tick - _lastStatTick);
-                _lastStatTick = TimerService.Tick;
-                _receiveStatTick = TimerService.Tick + 1000;
+            var now = Stopwatch.GetTimestamp();
+            if (now >= Volatile.Read(ref _receiveStatTick)) {
+                count = Interlocked.Exchange(ref _lCount, 0);
+                var elapsed = (now - Volatile.Read(ref _lastStatTick)) * TickToMilliseconds;
+                Log.Info("Connect statistics: {0} messages in {1} ms", count, (long)elapsed);
+                Volatile.Write(ref _lastStatTick, now);
+                Volatile.Write(ref _receiveStatTick, now + Stopwatch.Frequency);
             }
             
             var segments = context.Request.Path.Value!.TrimStart('/').Split('/');
@@ -101,9 +105,9 @@ public class Startup {
                     ArrayPool<byte>.Shared.Return(buf);
                 }
 
-                var tick = TimerService.Tick - begin;
-                if (tick > 1000) {
-                    Log.Err("Timeout: elapsed_ticks={0}", tick);
+                var elapsed = (Stopwatch.GetTimestamp() - begin) * TickToMilliseconds;
+                if (elapsed > 1000) {
+                    Log.Err("Timeout: elapsed_ticks={0}", (long)elapsed);
                 }
             }
         });

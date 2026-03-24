@@ -21,18 +21,31 @@ public class Main
     {
         get; private set;
     }
+
+    private static HttpService? _service;
     
-    public static async Task Run(Config cfg)
+    public static void Start(Config cfg)
     {
         Redis = new RedisHandle(cfg.RedisUrl, cfg.RedisPwd);
         Mongo = new MongodbProxy(cfg.MongoUrl);
         
         TimerService.Ins!.AddTickTime(5 * 60 * 1000, Save);
         
-        var service = new HttpService(cfg.Host, cfg.Port);
-        service.Run();
+        _service = new HttpService(cfg.Host, cfg.Port);
+        _service.Run();
+    }
 
-        await service.Close();
+    public static void Run()
+    {
+        TimerService.Ins!.Poll();
+    }
+
+    public static async Task WaitClose()
+    {
+        if (_service != null)
+        {
+            await _service.Close();
+        }
     }
 
     private static async void Save(long _)
@@ -72,13 +85,14 @@ public class Main
                     break;
                 }
             }
-
-            back:
-            TimerService.Ins!.AddTickTime(5 * 60 * 1000, Save);
         }
         catch (Exception ex)
         {
             Log.Err(ex.Message);
+        }
+        finally
+        {
+            TimerService.Ins!.AddTickTime(5 * 60 * 1000, Save);
         }
     }
 }

@@ -6,6 +6,7 @@ namespace hub;
 
 public class TimerService
 {
+    private const int PollIntervalMs = 100;
     private static readonly Lock Mutex = new Lock();
     private static TimerService? _ins = null;
     public static TimerService? Ins
@@ -55,6 +56,29 @@ public class TimerService
 
         loopDayTick = 0;
         loopWeekDayTick = 0;
+
+        _pollTimer = new Timer(static state =>
+        {
+            var service = state as TimerService;
+            if (service == null)
+            {
+                return;
+            }
+
+            if (Interlocked.Exchange(ref service._isPolling, 1) != 0)
+            {
+                return;
+            }
+
+            try
+            {
+                service.Poll();
+            }
+            finally
+            {
+                Volatile.Write(ref service._isPolling, 0);
+            }
+        }, this, 0, PollIntervalMs);
 
         AddTickTime(888, PollDayTimeHandleImpl);
         AddTickTime(888, PollTimeHandleImpl);
@@ -768,6 +792,8 @@ public class TimerService
 
     private readonly SortedDictionary<long, HandleImpl> tickHandleDict;
     private readonly Dictionary<long, HandleImpl> addTickHandle;
+    private readonly Timer _pollTimer;
+    private int _isPolling;
 
     private readonly Dictionary<MonthDayTime, List<HandleImpl>> monthTimeHandleDict;
     private readonly Dictionary<MonthDayTime, List<HandleImpl>> addmonthtimeHandle;
