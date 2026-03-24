@@ -12,6 +12,8 @@ public class Config
 
 public class Main
 {
+    private const int SaveBatchSize = 64;
+
     public static RedisHandle? Redis
     {
         get; private set;
@@ -62,7 +64,7 @@ public class Main
                 throw new Exception("internal error! mongo is nil");
             }
 
-            for (var i = 0; i < 10; i++)
+            for (var i = 0; i < SaveBatchSize; i++)
             {
                 var data = await Redis.PopList<DirtyData>(RedisHelp.EntityStoreMongodbList);
                 if (data == null)
@@ -70,19 +72,34 @@ public class Main
                     break;
                 }
 
-                var data1 = await Redis.GetData(string.Format(RedisHelp.EntityStoreKey, data.Type, data.Guid));
+                var storeKey = string.Format(RedisHelp.EntityStoreKey, data.Type, data.Guid);
+                var dirtyFlagKey = string.Format(RedisHelp.EntityTickFlagKey, data.Type, data.Guid);
+
+                var data1 = await Redis.GetData(storeKey);
                 if (data1 == null)
                 {
-                    break;
+                    Redis.DelData(dirtyFlagKey);
+                    continue;
                 }
 
                 var query = new DBQueryHelper();
                 query.Condition("player_guid", data.Guid);
-                var result = await Mongo.Update("game", "player", query.query().ToBson(), data1, true);
+                var update = new UpdateDataHelper();
+                update.Set(MongoDB.Bson.Serialization.BsonSerializer.Deserialize<BsonDocument>(data1));
+
+                var result = await Mongo.Update("game", data.Type, query.query().ToBson(), update.Data().ToBson(), true);
                 if (!result)
                 {
                     Log.Err("Save mongodb error");
-                    break;
+                    continue;
+                }
+
+                Redis.DelData(dirtyFlagKey);
+                var latestData = await Redis.GetData(storeKey);
+                if (latestData != null && !latestData.SequenceEqual(data1))
+                {
+                    await Redis.SetData(dirtyFlagKey, 1, 10 * 60 * 1000);
+                    await Redis.PushList(RedisHelp.EntityStoreMongodbList, data);
                 }
             }
         }

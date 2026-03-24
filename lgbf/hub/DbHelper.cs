@@ -8,7 +8,7 @@ public class SaveDataHelper
     }
 
     private BsonDocument? _bsonData = null;
-    private readonly Dictionary<string, string> _setData = new();
+    private readonly Dictionary<string, BsonValue> _setData = new();
 
     public SaveDataHelper Set<T>(string key, T t)
     {
@@ -21,12 +21,8 @@ public class SaveDataHelper
         {
             throw new SaveDataHelperException("t value is empty!");
         }
-        
-        var tStr  = t.ToString();
-        if (tStr != null && string.IsNullOrEmpty(tStr))
-        {
-            _setData.Add(key, tStr);
-        }
+
+        _setData[key] = BsonValue.Create(t);
 
         return this;
     }
@@ -37,7 +33,7 @@ public class SaveDataHelper
         {
             throw new SaveDataHelperException("repeat set value json_data is set!");
         }
-        _setData.Add(key, "\"" + v + "\"");
+        _setData[key] = v;
         return this;
     }
 
@@ -79,8 +75,8 @@ public class UpdateDataHelper
     }
 
     private BsonDocument? _bsonData = null;
-    private Dictionary<string, string> SetData = new();
-    private Dictionary<string, string> IncData = new();
+    private readonly Dictionary<string, BsonValue> _setData = new();
+    private readonly Dictionary<string, BsonValue> _incData = new();
 
     public UpdateDataHelper Set<T>(string key, T t)
     {
@@ -94,8 +90,7 @@ public class UpdateDataHelper
             throw new UpdateDataHelperException("t value is empty!");
         }
 
-        _bsonData = new BsonDocument();
-        _bsonData.Add(key, t.ToString());
+        _setData[key] = BsonValue.Create(t);
         return this;
     }
 
@@ -105,13 +100,13 @@ public class UpdateDataHelper
         {
             throw new UpdateDataHelperException("repeat set value json_data is set!");
         }
-        SetData.Add(key, "\"" + v + "\"");
+        _setData[key] = v;
         return this;
     }
 
     public UpdateDataHelper Set<T>(T t)
     {
-        if (SetData.Count > 0)
+        if (_setData.Count > 0)
         {
             throw new UpdateDataHelperException("repeat set value set_data is set!");
         }
@@ -126,13 +121,9 @@ public class UpdateDataHelper
             throw new UpdateDataHelperException("Inc t value is empty!");
         }
 
-        if (!string.IsNullOrEmpty(key) && !string.IsNullOrEmpty(t.ToString()))
+        if (!string.IsNullOrEmpty(key))
         {
-            var tStr  = t.ToString();
-            if (tStr != null && string.IsNullOrEmpty(tStr))
-            {
-                IncData.Add(key, tStr);
-            }
+            _incData[key] = BsonValue.Create(t);
         }
     }
 
@@ -140,9 +131,9 @@ public class UpdateDataHelper
     {
         BsonDocument data = new();
 
-        if (SetData.Count > 0)
+        if (_setData.Count > 0)
         {
-            var bsonSetData = new BsonDocument(SetData);
+            var bsonSetData = new BsonDocument(_setData);
             data.Add("$set", bsonSetData);
         }
         else if (_bsonData != null)
@@ -150,9 +141,9 @@ public class UpdateDataHelper
             data.Add("$set", _bsonData);
         }
 
-        if (IncData.Count > 0)
+        if (_incData.Count > 0)
         {
-            var bsonIncData = new BsonDocument(IncData);
+            var bsonIncData = new BsonDocument(_incData);
             data.Add("$inc", bsonIncData);
         }
 
@@ -161,7 +152,7 @@ public class UpdateDataHelper
 
     public bool Empty()
     {
-        return IncData.Count == 0 && SetData.Count == 0 && _bsonData == null;
+        return _incData.Count == 0 && _setData.Count == 0 && _bsonData == null;
     }
 }
 

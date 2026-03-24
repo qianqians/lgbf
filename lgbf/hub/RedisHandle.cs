@@ -1,16 +1,16 @@
-using Microsoft.AspNetCore.Identity;
-using Newtonsoft.Json;
-using StackExchange.Redis;
 using System;
-using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization;
+using Newtonsoft.Json;
+using StackExchange.Redis;
 
 namespace hub;
 
 public class RedisHandle
 {
+    private const int RecoverRetryDelayMs = 8;
     private ConnectionMultiplexer? _connectionMultiplexer;
     private IDatabase? _database;
     private readonly RedisConnectionHelper _connHelper;
@@ -45,6 +45,7 @@ public class RedisHandle
             catch (RedisTimeoutException e)
             {
                 Recover(e);
+                Thread.Sleep(RecoverRetryDelayMs);
             }
         }
     }
@@ -72,6 +73,56 @@ public class RedisHandle
             catch (RedisTimeoutException e)
             {
                 Recover(e);
+                Thread.Sleep(RecoverRetryDelayMs);
+            }
+        }
+    }
+
+    public Task<bool> SetData(string key, byte[] data, int timeout = 0)
+    {
+        while (true)
+        {
+            try
+            {
+                if (_database == null)
+                {
+                    return Task.FromResult(false);
+                }
+
+                RedisValue value = data;
+                if (timeout != 0)
+                {
+                    return _database.StringSetAsync(key, value, TimeSpan.FromMilliseconds(timeout));
+                }
+
+                return _database.StringSetAsync(key, value);
+            }
+            catch (RedisTimeoutException e)
+            {
+                Recover(e);
+                Thread.Sleep(RecoverRetryDelayMs);
+            }
+        }
+    }
+
+    public Task<bool> SetDataIfNotExists(string key, int data, int timeout = 0)
+    {
+        while (true)
+        {
+            try
+            {
+                if (_database == null)
+                {
+                    return Task.FromResult(false);
+                }
+
+                var expiry = timeout > 0 ? TimeSpan.FromMilliseconds(timeout) : (TimeSpan?)null;
+                return _database.StringSetAsync(key, data, expiry, when: When.NotExists);
+            }
+            catch (RedisTimeoutException e)
+            {
+                Recover(e);
+                Thread.Sleep(RecoverRetryDelayMs);
             }
         }
     }
@@ -97,6 +148,7 @@ public class RedisHandle
             catch (RedisTimeoutException e)
             {
                 Recover(e);
+                Thread.Sleep(RecoverRetryDelayMs);
             }
         }
     }
@@ -135,6 +187,7 @@ public class RedisHandle
             catch (RedisTimeoutException e)
             {
                 Recover(e);
+                Thread.Sleep(RecoverRetryDelayMs);
             }
         }
     }
@@ -155,6 +208,7 @@ public class RedisHandle
             catch (RedisTimeoutException e)
             {
                 Recover(e);
+                Thread.Sleep(RecoverRetryDelayMs);
             }
         }
     }
@@ -181,6 +235,7 @@ public class RedisHandle
             catch (RedisTimeoutException e)
             {
                 Recover(e);
+                await Task.Delay(RecoverRetryDelayMs);
             }
         }
     }
@@ -209,6 +264,7 @@ public class RedisHandle
             catch (RedisTimeoutException e)
             {
                 Recover(e);
+                await Task.Delay(RecoverRetryDelayMs);
             }
         }
     }
@@ -227,6 +283,7 @@ public class RedisHandle
         catch (RedisTimeoutException e)
         {
             Recover(e);
+            await Task.Delay(RecoverRetryDelayMs);
         }
         
         return false;
@@ -249,6 +306,7 @@ public class RedisHandle
             catch (RedisTimeoutException e)
             {
                 Recover(e);
+                await Task.Delay(RecoverRetryDelayMs);
             }
         }
     }

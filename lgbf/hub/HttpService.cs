@@ -51,10 +51,9 @@ public class Startup {
         {
             var begin = Stopwatch.GetTimestamp();
 
-            var count = Interlocked.Add(ref _lCount, 1);
             var now = Stopwatch.GetTimestamp();
             if (now >= Volatile.Read(ref _receiveStatTick)) {
-                count = Interlocked.Exchange(ref _lCount, 0);
+                var count = Interlocked.Exchange(ref _lCount, 0);
                 var elapsed = (now - Volatile.Read(ref _lastStatTick)) * TickToMilliseconds;
                 Log.Info("Connect statistics: {0} messages in {1} ms", count, (long)elapsed);
                 Volatile.Write(ref _lastStatTick, now);
