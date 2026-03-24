@@ -2,6 +2,8 @@ namespace hub;
 
 public class EntityMgr
 {
+    private const int RetryDelayMs = 8;
+
     private async Task UnlockFunc(List<Func<Task>> unlockList)
     {
         foreach (var ul in unlockList)
@@ -19,31 +21,38 @@ public class EntityMgr
             lockEntities.Add(entity);
         }
 
+        var self = new Entity(ctx);
+        var retryDelay = RetryDelayMs;
+
         ReTry:
-        var unlockList = new List<Func<Task>>();
+        var unlockList = new List<Func<Task>>(lockEntities.Count);
         try
         {
-            Entity? self = null;
-            var entities = new List<Entity>();
+            var entities = new List<Entity>(entityIdes.Length);
             foreach (var entityId in lockEntities)
             {
                 var token = Guid.NewGuid().ToString();
-                var lockSuccess = await ctx.Redis!.TryLock(string.Format(RedisHelp.EntityLockKey, entityId), token, 10_000);
+                var lockKey = string.Format(RedisHelp.EntityLockKey, entityId);
+                var lockSuccess = await ctx.Redis!.TryLock(lockKey, token, 10_000);
                 if (lockSuccess)
                 {
-                    unlockList.Add(async () => { await ctx.Redis.UnLock(entityId, token); });
-                    entities.Add(new Entity(ctx.From(entityId)));
+                    unlockList.Add(async () => { await ctx.Redis.UnLock(lockKey, token); });
+                    if (entityId != ctx.Guid)
+                    {
+                        entities.Add(new Entity(ctx.From(entityId)));
+                    }
                 }
                 else
                 {
                     break;
                 }
             }
-            self = new Entity(ctx);
 
-            if (entities.Count != entityIdes.Length)
+            if (unlockList.Count != lockEntities.Count)
             {
                 await UnlockFunc(unlockList);
+                await Task.Delay(retryDelay);
+                retryDelay = Math.Min(retryDelay * 2, 256);
                 goto ReTry;
             }
             callback(self, entities.ToArray());
