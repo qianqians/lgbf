@@ -7,6 +7,7 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <Compile Remove="**/._*.cs" />
       <FrameworkReference Include="Microsoft.AspNetCore.App" />
       <PackageReference Include="Google.Protobuf" Version="3.34.0" />
       <PackageReference Include="MongoDB.Bson" Version="3.7.0" />

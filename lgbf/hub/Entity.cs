@@ -28,9 +28,9 @@ public interface IHostingData
 
 public interface IDataAgent<T> where T : IHostingData
 {
-    public T Data { get; set; }
+    public T Data { get; }
 
-    public void WriteBack();
+    public Task WriteBack();
 }
 
 public class DirtyData
@@ -52,12 +52,12 @@ internal class DataAgent<T> : IDataAgent<T> where T : IHostingData
         _dirtyFlagKey = string.Format(RedisHelp.EntityTickFlagKey, T.Type(), _entity.Ctx.Guid);
     }
 
-    public required T Data { get; set; }
+    public required T Data { get; init; }
     
-    public void WriteBack()
+    public Task WriteBack()
     {
         var bson = Data.Store().ToBson();
-        _ = WriteBackAsync(bson);
+        return WriteBackAsync(bson);
     }
 
     private async Task WriteBackAsync(byte[] bson)
@@ -65,7 +65,11 @@ internal class DataAgent<T> : IDataAgent<T> where T : IHostingData
         try
         {
             var redis = _entity.Ctx.Redis!;
-            await redis.SetData(_storeKey, bson);
+            var setOk = await redis.SetData(_storeKey, bson);
+            if (!setOk)
+            {
+                throw new InvalidOperationException($"entity write back failed: redis set failed for {_storeKey}");
+            }
 
             var firstDirty = await redis.SetDataIfNotExists(_dirtyFlagKey, 1, 10 * 60 * 1000);
             if (!firstDirty)
@@ -73,21 +77,35 @@ internal class DataAgent<T> : IDataAgent<T> where T : IHostingData
                 return;
             }
 
-            await redis.PushList(RedisHelp.EntityStoreMongodbList, new DirtyData()
+            var pushLen = await redis.PushList(RedisHelp.EntityStoreMongodbList, new DirtyData()
             {
                 Type = T.Type(),
                 Guid = _entity.Ctx.Guid
             });
+            if (pushLen <= 0)
+            {
+                throw new InvalidOperationException(
+                    $"entity write back failed: dirty queue push failed for {_entity.Ctx.Guid}");
+            }
         }
         catch (Exception ex)
         {
-            Log.Err("entity write back failed: {0}", ex.Message);
+            Log.Err("entity write back failed: {0}", ex);
+            throw;
         }
     }
 }
 
 public record Entity(Context Ctx)
 {
+    private DataAgent<T> CreateAgent<T>(T data) where T : IHostingData
+    {
+        return new DataAgent<T>(this)
+        {
+            Data = data
+        };
+    }
+
     public async Task<IDataAgent<T>?> Get<T>() where T : IHostingData
     {
         var storeKey = string.Format(RedisHelp.EntityStoreKey, T.Type(), Ctx.Guid);
@@ -98,11 +116,7 @@ public record Entity(Context Ctx)
             var data = T.Load(doc);
             if (data != null)
             {
-                var agent = new DataAgent<T>(this)
-                {
-                    Data = (T)data
-                };
-                return agent;
+                return CreateAgent((T)data);
             }
         }
 
@@ -119,13 +133,26 @@ public record Entity(Context Ctx)
         if (data1 != null)
         {
             await Ctx.Redis.SetData(storeKey, data1.Store().ToBson());
-            var agent = new DataAgent<T>(this)
-            {
-                Data = (T)data1
-            };
-            return agent;
+            return CreateAgent((T)data1);
         }
         
         return null;
+    }
+
+    public async Task<IDataAgent<T>> GetOrCreate<T>() where T : IHostingData
+    {
+        var agent = await Get<T>();
+        if (agent != null)
+        {
+            return agent;
+        }
+
+        var created = T.Create();
+        if (created is not T data)
+        {
+            throw new InvalidOperationException($"{typeof(T).Name} does not provide a valid Create implementation");
+        }
+
+        return CreateAgent(data);
     }
 }

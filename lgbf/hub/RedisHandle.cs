@@ -289,6 +289,26 @@ public class RedisHandle
         return false;
     }
 
+    public async ValueTask<bool> LockExtend(string key, string token, uint timeout)
+    {
+        try
+        {
+            if (_database == null)
+            {
+                return false;
+            }
+
+            return await _database.LockExtendAsync(key, token, TimeSpan.FromMilliseconds(timeout));
+        }
+        catch (RedisTimeoutException e)
+        {
+            Recover(e);
+            await Task.Delay(RecoverRetryDelayMs);
+        }
+
+        return false;
+    }
+
     public async ValueTask UnLock(string key, string token)
     {
         while (true)

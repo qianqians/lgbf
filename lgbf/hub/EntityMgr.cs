@@ -3,18 +3,47 @@ namespace hub;
 public class EntityMgr
 {
     private const int RetryDelayMs = 8;
+    private const uint LockTimeoutMs = 10_000;
+    private const int LockRenewIntervalMs = 3_000;
 
-    private async Task UnlockFunc(List<Func<Task>> unlockList)
+    private sealed record LockToken(string Key, string Token);
+
+    private static async Task UnlockFunc(RedisHandle redis, List<LockToken> lockTokens)
     {
-        foreach (var ul in unlockList)
+        foreach (var lockToken in lockTokens)
         {
-            await ul();
+            await redis.UnLock(lockToken.Key, lockToken.Token);
         }
-        unlockList.Clear();
+        lockTokens.Clear();
+    }
+
+    private static async Task RenewLocks(RedisHandle redis, List<LockToken> lockTokens, CancellationToken cancellationToken)
+    {
+        while (!cancellationToken.IsCancellationRequested)
+        {
+            try
+            {
+                await Task.Delay(LockRenewIntervalMs, cancellationToken);
+            }
+            catch (OperationCanceledException)
+            {
+                break;
+            }
+
+            foreach (var lockToken in lockTokens)
+            {
+                var renewed = await redis.LockExtend(lockToken.Key, lockToken.Token, LockTimeoutMs);
+                if (!renewed)
+                {
+                    throw new InvalidOperationException($"lock renew failed: {lockToken.Key}");
+                }
+            }
+        }
     }
     
-    public async Task CallLockAndGetEntity(Context ctx, string[] entityIdes, Action<Entity, Entity[]> callback)
+    public async Task CallLockAndGetEntity(Context ctx, string[] entityIdes, Func<Entity, Entity[], Task> callback)
     {
+        var redis = ctx.Redis ?? throw new InvalidOperationException("context redis is nil");
         var lockEntities = new SortedSet<string>(){ctx.Guid};
         foreach (var entity in entityIdes)
         {
@@ -25,22 +54,17 @@ public class EntityMgr
         var retryDelay = RetryDelayMs;
 
         ReTry:
-        var unlockList = new List<Func<Task>>(lockEntities.Count);
+        var lockTokens = new List<LockToken>(lockEntities.Count);
         try
         {
-            var entities = new List<Entity>(entityIdes.Length);
             foreach (var entityId in lockEntities)
             {
                 var token = Guid.NewGuid().ToString();
                 var lockKey = string.Format(RedisHelp.EntityLockKey, entityId);
-                var lockSuccess = await ctx.Redis!.TryLock(lockKey, token, 10_000);
+                var lockSuccess = await redis.TryLock(lockKey, token, LockTimeoutMs);
                 if (lockSuccess)
                 {
-                    unlockList.Add(async () => { await ctx.Redis.UnLock(lockKey, token); });
-                    if (entityId != ctx.Guid)
-                    {
-                        entities.Add(new Entity(ctx.From(entityId)));
-                    }
+                    lockTokens.Add(new LockToken(lockKey, token));
                 }
                 else
                 {
@@ -48,22 +72,56 @@ public class EntityMgr
                 }
             }
 
-            if (unlockList.Count != lockEntities.Count)
+            if (lockTokens.Count != lockEntities.Count)
             {
-                await UnlockFunc(unlockList);
+                await UnlockFunc(redis, lockTokens);
                 await Task.Delay(retryDelay);
                 retryDelay = Math.Min(retryDelay * 2, 256);
                 goto ReTry;
             }
-            callback(self, entities.ToArray());
-        }
-        catch (Exception ex)
-        {
-            Log.Trace("CallLockAndGetEntity failed:{0}", ex.Message);
+
+            var entityMap = new Dictionary<string, Entity>(entityIdes.Length);
+            foreach (var entityId in entityIdes)
+            {
+                if (!entityMap.ContainsKey(entityId))
+                {
+                    entityMap.Add(entityId, new Entity(ctx.From(entityId)));
+                }
+            }
+
+            using var renewCts = new CancellationTokenSource();
+            var renewTask = RenewLocks(redis, lockTokens, renewCts.Token);
+            try
+            {
+                var entities = new List<Entity>(entityMap.Count);
+                foreach (var entityId in entityIdes)
+                {
+                    if (entityMap.TryGetValue(entityId, out var entity))
+                    {
+                        entities.Add(entity);
+                        entityMap.Remove(entityId);
+                    }
+                }
+
+                await callback(self, entities.ToArray());
+            }
+            finally
+            {
+                await renewCts.CancelAsync();
+                try
+                {
+                    await renewTask;
+                }
+                catch (OperationCanceledException ex)
+                {
+                    Log.Err("OperationCanceledException {0}", ex);
+                    throw;
+                }
+            }
         }
         finally
         {
-            await UnlockFunc(unlockList);
+            await UnlockFunc(redis, lockTokens);
         }
     }
 }
