@@ -39,11 +39,6 @@ public class Main
         _service.Run();
     }
 
-    public static void Run()
-    {
-        TimerService.Ins!.Poll();
-    }
-
     public static async Task WaitClose()
     {
         if (_service != null)
