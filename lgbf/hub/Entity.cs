@@ -20,9 +20,9 @@ public interface IHostingData
 
     public BsonDocument Store();
     
-    public void SetDirty(Action ifDirty)
+    public Task SetDirty(Func<Task> ifDirty)
     {
-        ifDirty.Invoke();
+        return ifDirty();
     }
 }
 
@@ -110,7 +110,7 @@ public record Entity(Context Ctx)
     {
         var storeKey = string.Format(RedisHelp.EntityStoreKey, T.Type(), Ctx.Guid);
         var bin = await Ctx.Redis!.GetData(storeKey);
-        if (bin != null && bin.Length > 0)
+        if (bin is { Length: > 0 })
         {
             var doc = MongoDB.Bson.Serialization.BsonSerializer.Deserialize<BsonDocument>(bin);
             var data = T.Load(doc);

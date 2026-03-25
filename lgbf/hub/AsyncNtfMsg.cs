@@ -26,7 +26,7 @@ public class AsyncNtfMsg : IHostingData
             AsyncNtfMsgList = new()
         };
         
-        foreach(var item in data.GetValue("list").AsBsonArray)
+        foreach(var item in data.GetValue("Messages").AsBsonArray)
         {
             msgList.AsyncNtfMsgList.Add(item.AsString);
         }
@@ -43,13 +43,44 @@ public class AsyncNtfMsg : IHostingData
         }
         var doc = new BsonDocument
         {
-            { "list", itemList }
+            { "Messages", itemList }
         };
         return doc;
     }
 
-    public void SendOfflineMsg(string msg)
+    public async Task SendOfflineMsg(Context ctx, string msg)
     {
-        AsyncNtfMsgList.Add(msg);
+        try
+        {
+            AsyncNtfMsgList.Add(msg);
+            await ((IHostingData)this).SetDirty(async () =>
+            {
+                try
+                {
+                    var storeKey = string.Format(RedisHelp.EntityStoreKey, Type(), ctx.Guid);
+                    if (ctx.Redis == null)
+                    {
+                        throw new Exception("SendOfflineMsg ctx.Redis is null!");
+                    }
+
+                    await ctx.Redis.SetData(storeKey, Store().ToBson());
+                    await ctx.Redis.PushList(RedisHelp.EntityStoreMongodbList, new
+                    {
+                        Type = Type(),
+                        Guid = ctx.Guid,
+                    });
+                }
+                catch (Exception ex)
+                {
+                    Log.Err("SendOfflineMsg SetDirty callback ex:{0}", ex);
+                    throw;
+                }
+            });
+        }
+        catch (Exception ex)
+        {
+            Log.Err("SendOfflineMsg ex:{0}", ex);
+            throw;
+        }
     }
 }
