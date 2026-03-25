@@ -22,15 +22,14 @@ public static partial class UnderlyingReflection {
   static UnderlyingReflection() {
     byte[] descriptorData = global::System.Convert.FromBase64String(
         string.Concat(
-          "ChB1bmRlcmx5aW5nLnByb3RvIk4KB1JlcXVlc3QSEQoJcHJvdG9OYW1lGAEg",
-          "ASgJEg8KB2NvbnRlbnQYAiABKAwSEAoIY2FsbEd1aWQYAyABKAkSDQoFdG9r",
-          "ZW4YBCABKAkiPQoIUmVzcG9uc2USEAoIY2FsbEd1aWQYASABKAkSDgoGZXJy",
-          "TXNnGAIgASgJEg8KB2NvbnRlbnQYAyABKAxiBnByb3RvMw=="));
+          "ChB1bmRlcmx5aW5nLnByb3RvIjwKB1JlcXVlc3QSEQoJcHJvdG9OYW1lGAEg",
+          "ASgJEg8KB2NvbnRlbnQYAiABKAwSDQoFdG9rZW4YAyABKAkiKwoIUmVzcG9u",
+          "c2USDgoGZXJyTXNnGAEgASgJEg8KB2NvbnRlbnQYAiABKAxiBnByb3RvMw=="));
     descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
         new pbr::FileDescriptor[] { },
         new pbr::GeneratedClrTypeInfo(null, null, new pbr::GeneratedClrTypeInfo[] {
-          new pbr::GeneratedClrTypeInfo(typeof(global::Request), global::Request.Parser, new[]{ "ProtoName", "Content", "CallGuid", "Token" }, null, null, null, null),
-          new pbr::GeneratedClrTypeInfo(typeof(global::Response), global::Response.Parser, new[]{ "CallGuid", "ErrMsg", "Content" }, null, null, null, null)
+          new pbr::GeneratedClrTypeInfo(typeof(global::Request), global::Request.Parser, new[]{ "ProtoName", "Content", "Token" }, null, null, null, null),
+          new pbr::GeneratedClrTypeInfo(typeof(global::Response), global::Response.Parser, new[]{ "ErrMsg", "Content" }, null, null, null, null)
         }));
   }
   #endregion
@@ -74,7 +73,6 @@ public sealed partial class Request : pb::IMessage<Request>
   public Request(Request other) : this() {
     protoName_ = other.protoName_;
     content_ = other.content_;
-    callGuid_ = other.callGuid_;
     token_ = other.token_;
     _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
   }
@@ -109,20 +107,8 @@ public sealed partial class Request : pb::IMessage<Request>
     }
   }
 
-  /// <summary>Field number for the "callGuid" field.</summary>
-  public const int CallGuidFieldNumber = 3;
-  private string callGuid_ = "";
-  [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-  public string CallGuid {
-    get { return callGuid_; }
-    set {
-      callGuid_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
-    }
-  }
-
   /// <summary>Field number for the "token" field.</summary>
-  public const int TokenFieldNumber = 4;
+  public const int TokenFieldNumber = 3;
   private string token_ = "";
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
   [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
@@ -150,7 +136,6 @@ public sealed partial class Request : pb::IMessage<Request>
     }
     if (ProtoName != other.ProtoName) return false;
     if (Content != other.Content) return false;
-    if (CallGuid != other.CallGuid) return false;
     if (Token != other.Token) return false;
     return Equals(_unknownFields, other._unknownFields);
   }
@@ -161,7 +146,6 @@ public sealed partial class Request : pb::IMessage<Request>
     int hash = 1;
     if (ProtoName.Length != 0) hash ^= ProtoName.GetHashCode();
     if (Content.Length != 0) hash ^= Content.GetHashCode();
-    if (CallGuid.Length != 0) hash ^= CallGuid.GetHashCode();
     if (Token.Length != 0) hash ^= Token.GetHashCode();
     if (_unknownFields != null) {
       hash ^= _unknownFields.GetHashCode();
@@ -189,12 +173,8 @@ public sealed partial class Request : pb::IMessage<Request>
       output.WriteRawTag(18);
       output.WriteBytes(Content);
     }
-    if (CallGuid.Length != 0) {
-      output.WriteRawTag(26);
-      output.WriteString(CallGuid);
-    }
     if (Token.Length != 0) {
-      output.WriteRawTag(34);
+      output.WriteRawTag(26);
       output.WriteString(Token);
     }
     if (_unknownFields != null) {
@@ -215,12 +195,8 @@ public sealed partial class Request : pb::IMessage<Request>
       output.WriteRawTag(18);
       output.WriteBytes(Content);
     }
-    if (CallGuid.Length != 0) {
-      output.WriteRawTag(26);
-      output.WriteString(CallGuid);
-    }
     if (Token.Length != 0) {
-      output.WriteRawTag(34);
+      output.WriteRawTag(26);
       output.WriteString(Token);
     }
     if (_unknownFields != null) {
@@ -238,9 +214,6 @@ public sealed partial class Request : pb::IMessage<Request>
     }
     if (Content.Length != 0) {
       size += 1 + pb::CodedOutputStream.ComputeBytesSize(Content);
-    }
-    if (CallGuid.Length != 0) {
-      size += 1 + pb::CodedOutputStream.ComputeStringSize(CallGuid);
     }
     if (Token.Length != 0) {
       size += 1 + pb::CodedOutputStream.ComputeStringSize(Token);
@@ -262,9 +235,6 @@ public sealed partial class Request : pb::IMessage<Request>
     }
     if (other.Content.Length != 0) {
       Content = other.Content;
-    }
-    if (other.CallGuid.Length != 0) {
-      CallGuid = other.CallGuid;
     }
     if (other.Token.Length != 0) {
       Token = other.Token;
@@ -297,10 +267,6 @@ public sealed partial class Request : pb::IMessage<Request>
           break;
         }
         case 26: {
-          CallGuid = input.ReadString();
-          break;
-        }
-        case 34: {
           Token = input.ReadString();
           break;
         }
@@ -332,10 +298,6 @@ public sealed partial class Request : pb::IMessage<Request>
           break;
         }
         case 26: {
-          CallGuid = input.ReadString();
-          break;
-        }
-        case 34: {
           Token = input.ReadString();
           break;
         }
@@ -381,7 +343,6 @@ public sealed partial class Response : pb::IMessage<Response>
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
   [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   public Response(Response other) : this() {
-    callGuid_ = other.callGuid_;
     errMsg_ = other.errMsg_;
     content_ = other.content_;
     _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
@@ -393,20 +354,8 @@ public sealed partial class Response : pb::IMessage<Response>
     return new Response(this);
   }
 
-  /// <summary>Field number for the "callGuid" field.</summary>
-  public const int CallGuidFieldNumber = 1;
-  private string callGuid_ = "";
-  [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-  public string CallGuid {
-    get { return callGuid_; }
-    set {
-      callGuid_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
-    }
-  }
-
   /// <summary>Field number for the "errMsg" field.</summary>
-  public const int ErrMsgFieldNumber = 2;
+  public const int ErrMsgFieldNumber = 1;
   private string errMsg_ = "";
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
   [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
@@ -418,7 +367,7 @@ public sealed partial class Response : pb::IMessage<Response>
   }
 
   /// <summary>Field number for the "content" field.</summary>
-  public const int ContentFieldNumber = 3;
+  public const int ContentFieldNumber = 2;
   private pb::ByteString content_ = pb::ByteString.Empty;
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
   [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
@@ -444,7 +393,6 @@ public sealed partial class Response : pb::IMessage<Response>
     if (ReferenceEquals(other, this)) {
       return true;
     }
-    if (CallGuid != other.CallGuid) return false;
     if (ErrMsg != other.ErrMsg) return false;
     if (Content != other.Content) return false;
     return Equals(_unknownFields, other._unknownFields);
@@ -454,7 +402,6 @@ public sealed partial class Response : pb::IMessage<Response>
   [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   public override int GetHashCode() {
     int hash = 1;
-    if (CallGuid.Length != 0) hash ^= CallGuid.GetHashCode();
     if (ErrMsg.Length != 0) hash ^= ErrMsg.GetHashCode();
     if (Content.Length != 0) hash ^= Content.GetHashCode();
     if (_unknownFields != null) {
@@ -475,16 +422,12 @@ public sealed partial class Response : pb::IMessage<Response>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
     output.WriteRawMessage(this);
   #else
-    if (CallGuid.Length != 0) {
-      output.WriteRawTag(10);
-      output.WriteString(CallGuid);
-    }
     if (ErrMsg.Length != 0) {
-      output.WriteRawTag(18);
+      output.WriteRawTag(10);
       output.WriteString(ErrMsg);
     }
     if (Content.Length != 0) {
-      output.WriteRawTag(26);
+      output.WriteRawTag(18);
       output.WriteBytes(Content);
     }
     if (_unknownFields != null) {
@@ -497,16 +440,12 @@ public sealed partial class Response : pb::IMessage<Response>
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
   [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
-    if (CallGuid.Length != 0) {
-      output.WriteRawTag(10);
-      output.WriteString(CallGuid);
-    }
     if (ErrMsg.Length != 0) {
-      output.WriteRawTag(18);
+      output.WriteRawTag(10);
       output.WriteString(ErrMsg);
     }
     if (Content.Length != 0) {
-      output.WriteRawTag(26);
+      output.WriteRawTag(18);
       output.WriteBytes(Content);
     }
     if (_unknownFields != null) {
@@ -519,9 +458,6 @@ public sealed partial class Response : pb::IMessage<Response>
   [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   public int CalculateSize() {
     int size = 0;
-    if (CallGuid.Length != 0) {
-      size += 1 + pb::CodedOutputStream.ComputeStringSize(CallGuid);
-    }
     if (ErrMsg.Length != 0) {
       size += 1 + pb::CodedOutputStream.ComputeStringSize(ErrMsg);
     }
@@ -539,9 +475,6 @@ public sealed partial class Response : pb::IMessage<Response>
   public void MergeFrom(Response other) {
     if (other == null) {
       return;
-    }
-    if (other.CallGuid.Length != 0) {
-      CallGuid = other.CallGuid;
     }
     if (other.ErrMsg.Length != 0) {
       ErrMsg = other.ErrMsg;
@@ -569,14 +502,10 @@ public sealed partial class Response : pb::IMessage<Response>
           _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
           break;
         case 10: {
-          CallGuid = input.ReadString();
-          break;
-        }
-        case 18: {
           ErrMsg = input.ReadString();
           break;
         }
-        case 26: {
+        case 18: {
           Content = input.ReadBytes();
           break;
         }
@@ -600,14 +529,10 @@ public sealed partial class Response : pb::IMessage<Response>
           _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
           break;
         case 10: {
-          CallGuid = input.ReadString();
-          break;
-        }
-        case 18: {
           ErrMsg = input.ReadString();
           break;
         }
-        case 26: {
+        case 18: {
           Content = input.ReadBytes();
           break;
         }

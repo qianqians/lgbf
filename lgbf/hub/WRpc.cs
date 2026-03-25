@@ -7,7 +7,7 @@ public class WRpc
 {
     private static readonly ByteString OkContent = ByteString.CopyFromUtf8("OK");
 
-    private delegate Task RpcHandler(HttpRsp rsp, string avatarId, string callGuid, ByteString data);
+    private delegate Task RpcHandler(HttpRsp rsp, string avatarId, ByteString data);
 
     private readonly Dictionary<string, RpcHandler> callbackNtf = new();
 
@@ -34,7 +34,7 @@ public class WRpc
                     throw new Exception("rpc request failed! wrong avatarId is nil!");
                 }
 
-                await callback(rsp, Encoding.UTF8.GetString(avatarId), req.CallGuid, req.Content);
+                await callback(rsp, Encoding.UTF8.GetString(avatarId), req.Content);
             }
             catch (Exception ex)
             {
@@ -47,7 +47,7 @@ public class WRpc
     public void RegisterNtf<T>(Action<Context, T> callback) where T : IMessage<T>, new()
     {
         var parser = new MessageParser<T>(() => new T());
-        callbackNtf.Add(typeof(T).Name, async (HttpRsp rsp, string avatarId, string callGuid, ByteString data) =>
+        callbackNtf.Add(typeof(T).Name, async (HttpRsp rsp, string avatarId, ByteString data) =>
         {
             var r = new Response();
             try
@@ -55,13 +55,11 @@ public class WRpc
                 var t = parser.ParseFrom(data);
                 callback(Context.New(avatarId), t);
 
-                r.CallGuid = callGuid;
                 r.ErrMsg = "OK";
                 r.Content = OkContent;
             }
             catch (Exception ex)
             {
-                r.CallGuid = callGuid;
                 r.ErrMsg = "error";
                 r.Content = ByteString.CopyFromUtf8(ex.Message);
             }
@@ -75,7 +73,7 @@ public class WRpc
     public void RegisterAsyncNtf<T>(Func<Context, T, Task> callback) where T : IMessage<T>, new()
     {
         var parser = new MessageParser<T>(() => new T());
-        callbackNtf.Add(typeof(T).Name, async (HttpRsp rsp, string avatarId, string callGuid, ByteString data) =>
+        callbackNtf.Add(typeof(T).Name, async (HttpRsp rsp, string avatarId, ByteString data) =>
         {
             var r = new Response();
             try
@@ -83,13 +81,11 @@ public class WRpc
                 var t = parser.ParseFrom(data);
                 await callback(Context.New(avatarId), t);
 
-                r.CallGuid = callGuid;
                 r.ErrMsg = "OK";
                 r.Content = OkContent;
             }
             catch (Exception ex)
             {
-                r.CallGuid = callGuid;
                 r.ErrMsg = "error";
                 r.Content = ByteString.CopyFromUtf8(ex.Message);
             }
@@ -105,7 +101,7 @@ public class WRpc
         where T2 : IMessage<T2>, new()
     {
         var parser1 = new MessageParser<T1>(() => new T1());
-        callbackNtf.Add(typeof(T1).Name, async (HttpRsp rsp, string avatarId, string callGuid, ByteString data) =>
+        callbackNtf.Add(typeof(T1).Name, async (HttpRsp rsp, string avatarId, ByteString data) =>
         {
             var r = new Response();
             try
@@ -113,13 +109,11 @@ public class WRpc
                 var t = parser1.ParseFrom(data);
                 var back = callback(Context.New(avatarId), t);
 
-                r.CallGuid = callGuid;
                 r.ErrMsg = "OK";
                 r.Content = back.ToByteString();
             }
             catch (Exception ex)
             {
-                r.CallGuid = callGuid;
                 r.ErrMsg = "error";
                 r.Content = ByteString.CopyFromUtf8(ex.Message);
             }
@@ -135,7 +129,7 @@ public class WRpc
         where T2 : IMessage<T2>, new()
     {
         var parser1 = new MessageParser<T1>(() => new T1());
-        callbackNtf.Add(typeof(T1).Name, async (HttpRsp rsp, string avatarId, string callGuid, ByteString data) =>
+        callbackNtf.Add(typeof(T1).Name, async (HttpRsp rsp, string avatarId, ByteString data) =>
         {
             var r = new Response();
             try
@@ -143,13 +137,11 @@ public class WRpc
                 var t = parser1.ParseFrom(data);
                 var back = await callback(Context.New(avatarId), t);
 
-                r.CallGuid = callGuid;
                 r.ErrMsg = "OK";
                 r.Content = back.ToByteString();
             }
             catch (Exception ex)
             {
-                r.CallGuid = callGuid;
                 r.ErrMsg = "error";
                 r.Content = ByteString.CopyFromUtf8(ex.Message);
             }
