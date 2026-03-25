@@ -106,7 +106,7 @@ public record Entity(Context Ctx)
         };
     }
 
-    public async Task<IDataAgent<T>?> Get<T>() where T : IHostingData
+    private async Task<IDataAgent<T>?> Get<T>() where T : IHostingData
     {
         var storeKey = string.Format(RedisHelp.EntityStoreKey, T.Type(), Ctx.Guid);
         var bin = await Ctx.Redis!.GetData(storeKey);
@@ -121,7 +121,7 @@ public record Entity(Context Ctx)
         }
 
         var query = new DBQueryHelper();
-        query.Condition("player_guid", Ctx.Guid);
+        query.Condition("Guid", Ctx.Guid);
         var doc1 = await Ctx.Mongo!.Find(
             "game", T.Type(), query.query().ToBson(),
             0, 0, "", false);
