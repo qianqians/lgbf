@@ -112,7 +112,7 @@ public class Main
                 foreach (var item in latestItems.Values)
                 {
                     var query = new DBQueryHelper();
-                    query.Condition("player_guid", item.Dirty.Guid);
+                    query.Condition("Guid", item.Dirty.Guid);
                     var update = new UpdateDataHelper();
                     update.Set(MongoDB.Bson.Serialization.BsonSerializer.Deserialize<BsonDocument>(item.Data));
                     updateItems.Add(new BatchUpdateItem

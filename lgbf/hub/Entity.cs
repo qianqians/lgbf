@@ -19,11 +19,6 @@ public interface IHostingData
     }
 
     public BsonDocument Store();
-    
-    public Task SetDirty(Func<Task> ifDirty)
-    {
-        return ifDirty();
-    }
 }
 
 public interface IDataAgent<T> where T : IHostingData
@@ -106,7 +101,7 @@ public record Entity(Context Ctx)
         };
     }
 
-    private async Task<IDataAgent<T>?> Get<T>() where T : IHostingData
+    public async Task<IDataAgent<T>?> Get<T>() where T : IHostingData
     {
         var storeKey = string.Format(RedisHelp.EntityStoreKey, T.Type(), Ctx.Guid);
         var bin = await Ctx.Redis!.GetData(storeKey);

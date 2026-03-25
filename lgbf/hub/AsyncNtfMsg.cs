@@ -1,4 +1,3 @@
-using System.Diagnostics.Contracts;
 using MongoDB.Bson;
 namespace hub;
 
@@ -48,34 +47,11 @@ public class AsyncNtfMsg : IHostingData
         return doc;
     }
 
-    public async Task SendOfflineMsg(Context ctx, string msg)
+    public void SendOfflineMsg(string msg)
     {
         try
         {
             AsyncNtfMsgList.Add(msg);
-            await ((IHostingData)this).SetDirty(async () =>
-            {
-                try
-                {
-                    var storeKey = string.Format(RedisHelp.EntityStoreKey, Type(), ctx.Guid);
-                    if (ctx.Redis == null)
-                    {
-                        throw new Exception("SendOfflineMsg ctx.Redis is null!");
-                    }
-
-                    await ctx.Redis.SetData(storeKey, Store().ToBson());
-                    await ctx.Redis.PushList(RedisHelp.EntityStoreMongodbList, new
-                    {
-                        Type = Type(),
-                        Guid = ctx.Guid,
-                    });
-                }
-                catch (Exception ex)
-                {
-                    Log.Err("SendOfflineMsg SetDirty callback ex:{0}", ex);
-                    throw;
-                }
-            });
         }
         catch (Exception ex)
         {
