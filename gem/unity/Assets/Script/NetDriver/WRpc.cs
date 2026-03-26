@@ -57,7 +57,7 @@ namespace Script.NetDriver
             var response = Response.Parser.ParseFrom(responseBytes);
             if (!string.IsNullOrEmpty(response.ErrMsg))
             {
-                Debug.LogError($"WRpc.Notify response error: {response.ErrMsg}");
+                Debug.Log($"WRpc.Notify response error: {response.ErrMsg}");
             }
         }
         
@@ -67,7 +67,6 @@ namespace Script.NetDriver
         {
             var request = new Request()
             {
-                CallGuid = Guid.NewGuid().ToString(),
                 Token = _token,
                 ProtoName = typeof(T2).Name,
                 Content = argv.ToByteString()
@@ -86,20 +85,20 @@ namespace Script.NetDriver
 
             if (webRequest.result != UnityWebRequest.Result.Success)
             {
-                throw new InvalidOperationException($"WRpc.Notify failed: {webRequest.error}");
+                throw new InvalidOperationException($"WRpc.Request failed: {webRequest.error}");
             }
 
             var responseBytes = webRequest.downloadHandler.data;
             if (responseBytes == null || responseBytes.Length == 0)
             {
-                throw new InvalidOperationException("WRpc.Notify failed: empty response body.");
+                throw new InvalidOperationException("WRpc.Request failed: empty response body.");
             }
 
             var ret = new Result<T1>();
             var response = Response.Parser.ParseFrom(responseBytes);
             if (!string.IsNullOrEmpty(response.ErrMsg))
             {
-                Debug.LogError($"WRpc.Notify response error: {response.ErrMsg}");
+                Debug.LogError($"WRpc.Request response error: {response.ErrMsg}");
                 ret.ErrMsg = response.ErrMsg;
             }
             else
