@@ -330,4 +330,152 @@ public class RedisHandle
             }
         }
     }
+
+    public Task<bool> SortedSetAdd(string key, string member, double score)
+    {
+        while (true)
+        {
+            try
+            {
+                if (_database == null)
+                {
+                    return Task.FromResult(false);
+                }
+
+                return _database.SortedSetAddAsync(key, member, score);
+            }
+            catch (RedisTimeoutException e)
+            {
+                Recover(e);
+                Thread.Sleep(RecoverRetryDelayMs);
+            }
+        }
+    }
+
+    public Task<double> SortedSetIncrement(string key, string member, double value)
+    {
+        while (true)
+        {
+            try
+            {
+                if (_database == null)
+                {
+                    return Task.FromResult(0d);
+                }
+
+                return _database.SortedSetIncrementAsync(key, member, value);
+            }
+            catch (RedisTimeoutException e)
+            {
+                Recover(e);
+                Thread.Sleep(RecoverRetryDelayMs);
+            }
+        }
+    }
+
+    public Task<long?> SortedSetRank(string key, string member, Order order = Order.Descending)
+    {
+        while (true)
+        {
+            try
+            {
+                if (_database == null)
+                {
+                    return Task.FromResult<long?>(null);
+                }
+
+                return _database.SortedSetRankAsync(key, member, order);
+            }
+            catch (RedisTimeoutException e)
+            {
+                Recover(e);
+                Thread.Sleep(RecoverRetryDelayMs);
+            }
+        }
+    }
+
+    public Task<double?> SortedSetScore(string key, string member)
+    {
+        while (true)
+        {
+            try
+            {
+                if (_database == null)
+                {
+                    return Task.FromResult<double?>(null);
+                }
+
+                return _database.SortedSetScoreAsync(key, member);
+            }
+            catch (RedisTimeoutException e)
+            {
+                Recover(e);
+                Thread.Sleep(RecoverRetryDelayMs);
+            }
+        }
+    }
+
+    public Task<SortedSetEntry[]> SortedSetRangeByRankWithScores(string key, long start, long stop, Order order = Order.Descending)
+    {
+        while (true)
+        {
+            try
+            {
+                if (_database == null)
+                {
+                    return Task.FromResult(Array.Empty<SortedSetEntry>());
+                }
+
+                return _database.SortedSetRangeByRankWithScoresAsync(key, start, stop, order);
+            }
+            catch (RedisTimeoutException e)
+            {
+                Recover(e);
+                Thread.Sleep(RecoverRetryDelayMs);
+            }
+        }
+    }
+
+    public Task<bool> HashSet(string key, string field, string value)
+    {
+        while (true)
+        {
+            try
+            {
+                if (_database == null)
+                {
+                    return Task.FromResult(false);
+                }
+
+                return _database.HashSetAsync(key, field, value);
+            }
+            catch (RedisTimeoutException e)
+            {
+                Recover(e);
+                Thread.Sleep(RecoverRetryDelayMs);
+            }
+        }
+    }
+
+    public async Task<string?> HashGet(string key, string field)
+    {
+        while (true)
+        {
+            try
+            {
+                if (_database == null)
+                {
+                    return null;
+                }
+
+                var value = await _database.HashGetAsync(key, field);
+                return value.IsNull ? null : value.ToString();
+            }
+            catch (RedisTimeoutException e)
+            {
+                Recover(e);
+                await Task.Delay(RecoverRetryDelayMs);
+            }
+        }
+    }
 }
