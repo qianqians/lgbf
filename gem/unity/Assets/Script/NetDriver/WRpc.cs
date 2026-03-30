@@ -23,7 +23,7 @@ namespace Script.NetDriver
             _uri = uri;
         }
 
-        public async Task Notify<T>(T argv) where T : IMessage<T>, new()
+        public async Task<Response> Notify<T>(T argv) where T : IMessage<T>, new()
         {
             var request = new Request()
             {
@@ -59,6 +59,7 @@ namespace Script.NetDriver
             {
                 Debug.Log($"WRpc.Notify response error: {response.ErrMsg}");
             }
+            return response;
         }
         
         public async Task<Result<T1>> Request<T1, T2>(T2 argv) 
