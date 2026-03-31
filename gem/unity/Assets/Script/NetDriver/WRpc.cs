@@ -12,6 +12,11 @@ namespace Script.NetDriver
         public T Content;
     }
     
+    public class Result
+    {
+        public string ErrMsg;
+    }
+    
     public class WRpc
     {
         private readonly string _token;
@@ -23,7 +28,7 @@ namespace Script.NetDriver
             _uri = uri;
         }
 
-        public async Task<Response> Notify<T>(T argv) where T : IMessage<T>, new()
+        public async Task<Result> Notify<T>(T argv) where T : IMessage<T>, new()
         {
             var request = new Request()
             {
@@ -59,7 +64,10 @@ namespace Script.NetDriver
             {
                 Debug.Log($"WRpc.Notify response error: {response.ErrMsg}");
             }
-            return response;
+            return new Result()
+            {
+                ErrMsg = response.ErrMsg,
+            };
         }
         
         public async Task<Result<T1>> Request<T1, T2>(T2 argv) 
