@@ -28,7 +28,7 @@ namespace Script.NetDriver
             _uri = uri;
         }
 
-        public async Task<Result> Notify<T>(T argv) where T : IMessage<T>, new()
+        private async Task<Response> Post<T>(T argv) where T : IMessage<T>, new()
         {
             var request = new Request()
             {
@@ -58,8 +58,13 @@ namespace Script.NetDriver
             {
                 throw new InvalidOperationException("WRpc.Notify failed: empty response body.");
             }
+            
+            return Response.Parser.ParseFrom(responseBytes);
+        }
 
-            var response = Response.Parser.ParseFrom(responseBytes);
+        public async Task<Result> Notify<T>(T argv) where T : IMessage<T>, new()
+        {
+            var response = await Post(argv);
             if (!string.IsNullOrEmpty(response.ErrMsg))
             {
                 Debug.Log($"WRpc.Notify response error: {response.ErrMsg}");
@@ -74,37 +79,8 @@ namespace Script.NetDriver
             where T1 : IMessage<T1>, new()
             where T2 : IMessage<T2>, new()
         {
-            var request = new Request()
-            {
-                Token = _token,
-                ProtoName = typeof(T2).Name,
-                Content = argv.ToByteString()
-            };
-            var requestBytes = request.ToByteArray();
-            using UnityWebRequest webRequest = new UnityWebRequest(_uri, UnityWebRequest.kHttpVerbPOST);
-            webRequest.uploadHandler = new UploadHandlerRaw(requestBytes);
-            webRequest.downloadHandler = new DownloadHandlerBuffer();
-            webRequest.SetRequestHeader("Content-Type", "application/octet-stream");
-
-            var operation = webRequest.SendWebRequest();
-            while (!operation.isDone)
-            {
-                await Task.Yield();
-            }
-
-            if (webRequest.result != UnityWebRequest.Result.Success)
-            {
-                throw new InvalidOperationException($"WRpc.Request failed: {webRequest.error}");
-            }
-
-            var responseBytes = webRequest.downloadHandler.data;
-            if (responseBytes == null || responseBytes.Length == 0)
-            {
-                throw new InvalidOperationException("WRpc.Request failed: empty response body.");
-            }
-
             var ret = new Result<T1>();
-            var response = Response.Parser.ParseFrom(responseBytes);
+            var response = await Post(argv);
             if (!string.IsNullOrEmpty(response.ErrMsg))
             {
                 Debug.LogError($"WRpc.Request response error: {response.ErrMsg}");
