@@ -44,10 +44,10 @@ public class WRpc
         });
     }
 
-    public void RegisterNtf<T>(Action<Context, T> callback) where T : IMessage<T>, new()
+    public void RegisterNtf<T>(string method, Action<Context, T> callback) where T : IMessage<T>, new()
     {
         var parser = new MessageParser<T>(() => new T());
-        callbackNtf.Add(typeof(T).Name, async (HttpRsp rsp, string avatarId, ByteString data) =>
+        callbackNtf.Add(method, async (HttpRsp rsp, string avatarId, ByteString data) =>
         {
             var r = new Response();
             try
@@ -70,10 +70,10 @@ public class WRpc
         });
     }
 
-    public void RegisterAsyncNtf<T>(Func<Context, T, Task> callback) where T : IMessage<T>, new()
+    public void RegisterAsyncNtf<T>(string method, Func<Context, T, Task> callback) where T : IMessage<T>, new()
     {
         var parser = new MessageParser<T>(() => new T());
-        callbackNtf.Add(typeof(T).Name, async (HttpRsp rsp, string avatarId, ByteString data) =>
+        callbackNtf.Add(method, async (HttpRsp rsp, string avatarId, ByteString data) =>
         {
             var r = new Response();
             try
@@ -96,12 +96,12 @@ public class WRpc
         });
     }
 
-    public void RegisterRequest<T1, T2>(Func<Context, T1, T2> callback)
+    public void RegisterRequest<T1, T2>(string method, Func<Context, T1, T2> callback)
         where T1 : IMessage<T1>, new()
         where T2 : IMessage<T2>, new()
     {
         var parser1 = new MessageParser<T1>(() => new T1());
-        callbackNtf.Add(typeof(T1).Name, async (HttpRsp rsp, string avatarId, ByteString data) =>
+        callbackNtf.Add(method, async (HttpRsp rsp, string avatarId, ByteString data) =>
         {
             var r = new Response();
             try
@@ -124,12 +124,12 @@ public class WRpc
         });
     }
 
-    public void RegisterAsyncRequest<T1, T2>(Func<Context, T1, Task<T2>> callback)
+    public void RegisterAsyncRequest<T1, T2>(string method, Func<Context, T1, Task<T2>> callback)
         where T1 : IMessage<T1>, new()
         where T2 : IMessage<T2>, new()
     {
         var parser1 = new MessageParser<T1>(() => new T1());
-        callbackNtf.Add(typeof(T1).Name, async (HttpRsp rsp, string avatarId, ByteString data) =>
+        callbackNtf.Add(method, async (HttpRsp rsp, string avatarId, ByteString data) =>
         {
             var r = new Response();
             try

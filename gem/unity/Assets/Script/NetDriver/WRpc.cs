@@ -28,12 +28,12 @@ namespace Script.NetDriver
             _uri = uri;
         }
 
-        private async Task<Response> Post<T>(T argv) where T : IMessage<T>, new()
+        private async Task<Response> Post<T>(string method, T argv) where T : IMessage<T>, new()
         {
             var request = new Request()
             {
                 Token = _token,
-                ProtoName = typeof(T).Name,
+                ProtoName = method,
                 Content = argv.ToByteString()
             };
             var requestBytes = request.ToByteArray();
@@ -62,9 +62,9 @@ namespace Script.NetDriver
             return Response.Parser.ParseFrom(responseBytes);
         }
 
-        public async Task<Result> Notify<T>(T argv) where T : IMessage<T>, new()
+        public async Task<Result> Notify<T>(string method, T argv) where T : IMessage<T>, new()
         {
-            var response = await Post(argv);
+            var response = await Post(method, argv);
             if (!string.IsNullOrEmpty(response.ErrMsg))
             {
                 Debug.Log($"WRpc.Notify response error: {response.ErrMsg}");
@@ -75,12 +75,12 @@ namespace Script.NetDriver
             };
         }
         
-        public async Task<Result<T1>> Request<T1, T2>(T2 argv) 
+        public async Task<Result<T1>> Request<T1, T2>(string method, T2 argv) 
             where T1 : IMessage<T1>, new()
             where T2 : IMessage<T2>, new()
         {
             var ret = new Result<T1>();
-            var response = await Post(argv);
+            var response = await Post(method, argv);
             if (!string.IsNullOrEmpty(response.ErrMsg))
             {
                 Debug.LogError($"WRpc.Request response error: {response.ErrMsg}");
