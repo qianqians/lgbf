@@ -2,14 +2,27 @@
 import { _decorator, Animation, animation, Asset, Component, instantiate, Node, TTFFont, Prefab, resources, RichText, primitives, AudioSource, builtinResMgr, Canvas, Scene, Pool, error, input, Input, EventTouch, Vec2, Vec3, Camera, find } from 'cc';
 import { BundleManager } from '../BundleManager/BundleManager';
 
-export class UICore {
+export class UIManager {
+    private parent:Node|null = null;
+
     public CurrPageName:string = "";
     public CurrPage:Node|null = null;
 
     private currBorader:Node|null = null;
     public currboraderName:string = "";
 
-    public async OpenPage(pageName:string, bundleName:string, parent:Node) {
+    public static _instance:UIManager;
+    static get Instance():UIManager {
+        if(this._instance==null)
+            this._instance=new UIManager();
+        return this._instance;
+    }
+
+    public Init(parent:Node) {
+        this.parent = parent;
+    }
+    
+    public async OpenPage(pageName:string, bundleName:string) {
         if(this.CurrPageName == pageName)
         {
             console.warn("当前页面已打开:"+pageName);
@@ -20,7 +33,7 @@ export class UICore {
 
         let bundle = await BundleManager.Instance.LoadAssetsFromBundle(bundleName, pageName) as Prefab;
         let node = instantiate(bundle);
-        node.setParent(parent);
+        node.setParent(this.parent);
         this.CurrPage = node;
         this.CurrPageName = pageName;
 
@@ -38,7 +51,7 @@ export class UICore {
         }
     }
 
-    public async OpenBorader(boraderName:string, bundleName:string, parent:Node) {
+    public async OpenBorader(boraderName:string, bundleName:string) {
         if(this.currboraderName == boraderName)
         {
             console.warn("当前界面已打开:"+boraderName);
@@ -49,7 +62,7 @@ export class UICore {
 
         let bundle = await BundleManager.Instance.LoadAssetsFromBundle(bundleName, boraderName) as Prefab;
         let node = instantiate(bundle);
-        node.setParent(parent);
+        node.setParent(this.CurrPage);
         this.currBorader = node;
         this.currboraderName = boraderName;
 
