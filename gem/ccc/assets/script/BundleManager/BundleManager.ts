@@ -85,33 +85,21 @@ export class BundleManager
         });
     }
 
-    /**
-     * 预加载文件夹下的所有文件
-     * @param _bundle 包名
-     * @param _res 文件夹路径 （根目录填""）
-     */
-    public async PreLoadBundleDir(_bundle:string,_res:string,_callBack?:((bundleName:string,progress:number)=>void)|null, _complete?:(()=>void)|null)
-    {
-        return new Promise<void>(async (resolve, reject) =>
-        {
+    public async PreLoadBundleDir(_bundle:string,_res:string,_callBack?:((bundleName:string,progress:number)=>void)|null, _complete?:(()=>void)|null) {
+        return new Promise<void>(async (resolve, reject) => {
             let bundle = await this.loadBundle(_bundle);
             let info = bundle.getDirWithPath(_res);
-            if (info)
-            {
+            if (info) {
                 let n = 0;
-                for (let t of info)
-                {
+                for (let t of info) {
                     let uuid = t.uuid;
                     let cachedAsset = assetManager.assets.get(uuid)
-                    if (cachedAsset && isValid(cachedAsset))
-                    {
+                    if (cachedAsset && isValid(cachedAsset)) {
                         n++;
                     }
                 }
-                if (n == info.length)
-                {
-                    if (_callBack)
-                    {
+                if (n == info.length) {
+                    if (_callBack) {
                         for(let i=0; i < 10; i++) {
                             await sleep(333);
                             _callBack(_bundle, 90+i);
@@ -122,23 +110,17 @@ export class BundleManager
                 }
             }
 
-            bundle.preloadDir(_res, null, (finished, total, item) =>
-            {
-                if (_callBack)
-                {
+            bundle.preloadDir(_res, null, (finished, total, item) => {
+                if (_callBack) {
                     _callBack(_bundle, Math.floor(finished / total * 100));
                 }
-            }, async (err, data) =>
-            {
-                if (err)
-                {
+            }, async (err, data) => {
+                if (err) {
                     console.warn("预下载 ",bundle,"/",_res," 错误 ",err);
                     resolve();
                 }
-                else
-                {
-                    if(_complete)
-                    {
+                else {
+                    if(_complete) {
                         _complete();
                     }
                     resolve();

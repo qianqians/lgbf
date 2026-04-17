@@ -11,11 +11,11 @@ export class UIManager {
     private currBorader:Node|null = null;
     public currboraderName:string = "";
 
-    public static _instance:UIManager;
+    public static instance:UIManager;
     static get Instance():UIManager {
-        if(this._instance==null)
-            this._instance=new UIManager();
-        return this._instance;
+        if(this.instance==null)
+            this.instance=new UIManager();
+        return this.instance;
     }
 
     public Init(parent:Node) {
@@ -23,8 +23,7 @@ export class UIManager {
     }
     
     public async OpenPage(pageName:string, bundleName:string) {
-        if(this.CurrPageName == pageName)
-        {
+        if(this.CurrPageName == pageName) {
             console.warn("当前页面已打开:"+pageName);
             return;
         }
@@ -43,8 +42,7 @@ export class UIManager {
     }
 
     public ClosePage() {
-        if(this.CurrPage)
-        {
+        if(this.CurrPage) {
             this.CurrPage.destroy();
             this.CurrPage = null;
             this.CurrPageName = "";
@@ -52,8 +50,7 @@ export class UIManager {
     }
 
     public async OpenBorader(boraderName:string, bundleName:string) {
-        if(this.currboraderName == boraderName)
-        {
+        if(this.currboraderName == boraderName) {
             console.warn("当前界面已打开:"+boraderName);
             return;
         }
@@ -72,8 +69,7 @@ export class UIManager {
     }
 
     public CloseBorader() {
-        if(this.currBorader)
-        {
+        if(this.currBorader) {
             this.currBorader.destroy();
             this.currBorader = null;
             this.currboraderName = "";
