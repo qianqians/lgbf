@@ -1,0 +1,3 @@
+[submodule "gem/ccc/assets/script/tools"]
+	path = gem/ccc/assets/script/tools
+	url = git@github.com:qianqians/cccTools.git
