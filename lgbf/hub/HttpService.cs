@@ -1,16 +1,17 @@
-﻿using System;
-using System.Buffers;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.Threading;
-using System.Threading.Tasks;
+﻿using Google.Protobuf.Collections;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using System;
+using System.Buffers;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace hub;
 
@@ -151,6 +152,8 @@ public class HttpService
             webHostBuilder
                 .UseKestrel()
                 .ConfigureKestrel((context, options) => {
+                    options.Limits.MaxConcurrentConnections = 16_384;
+                    options.Limits.KeepAliveTimeout = TimeSpan.FromSeconds(120);
 
                     options.ListenAnyIP(_port, (listenOptions) => {
                         listenOptions.Protocols = HttpProtocols.Http1AndHttp2;
