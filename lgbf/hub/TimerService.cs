@@ -34,7 +34,11 @@ public partial class TimerService
         }
     }
 
-    private TimerService()
+    private TimerService() : this(startPollingTimer: true)
+    {
+    }
+
+    private TimerService(bool startPollingTimer)
     {
         tickHandleDict = new SortedDictionary<long, HandleImpl>();
         addTickHandle = new Dictionary<long, HandleImpl>();
@@ -82,13 +86,18 @@ public partial class TimerService
             {
                 Volatile.Write(ref service._isPolling, 0);
             }
-        }, this, 0, PollIntervalMs);
+        }, this, startPollingTimer ? 0 : Timeout.Infinite, PollIntervalMs);
 
         AddTickTime(888, PollDayTimeHandleImpl);
         AddTickTime(888, PollTimeHandleImpl);
         AddTickTime(888, PollMonthTimeHandleImpl);
         AddTickTime(888, PollLoopDayTimeHandleImpl);
         AddTickTime(888, PollLoopWeekDayTimeHandleImpl);
+    }
+
+    internal static TimerService CreateForTests()
+    {
+        return new TimerService(startPollingTimer: false);
     }
 
     private static long Refresh()

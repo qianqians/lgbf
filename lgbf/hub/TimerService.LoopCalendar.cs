@@ -5,6 +5,44 @@ namespace hub;
 
 public partial class TimerService
 {
+    private static long GetLoopDayMarker(DateTime time)
+    {
+        return time.Date.Ticks;
+    }
+
+    private static long GetLoopWeekMarker(DateTime time)
+    {
+        return time.Date.AddDays(-(int)time.DayOfWeek).Ticks;
+    }
+
+    private void RequeueLoopDayHandles()
+    {
+        foreach (var (key, item) in requeueLoopDayTimeHandles)
+        {
+            if (!loopDayTimeHandles.TryGetValue(key, out var impls))
+            {
+                impls = [];
+                loopDayTimeHandles.Add(key, impls);
+            }
+            impls.AddRange(item);
+        }
+        requeueLoopDayTimeHandles.Clear();
+    }
+
+    private void RequeueLoopWeekDayHandles()
+    {
+        foreach (var (key, item) in requeueLoopWeekDayTimeHandles)
+        {
+            if (!loopWeekDayTimeHandles.TryGetValue(key, out var impls))
+            {
+                impls = [];
+                loopWeekDayTimeHandles.Add(key, impls);
+            }
+            impls.AddRange(item);
+        }
+        requeueLoopWeekDayTimeHandles.Clear();
+    }
+
     private void AddLoopDayTimeHandleImpl()
     {
         lock (pendingLoopDayTimeHandles)
@@ -24,32 +62,26 @@ public partial class TimerService
 
     private void PollLoopDayTimeHandleImpl(long tick)
     {
+        PollLoopDayTimeHandleImpl(tick, DateTime.Now, reschedule: true);
+    }
+
+    private void PollLoopDayTimeHandleImpl(long tick, DateTime time, bool reschedule)
+    {
         try
         {
             AddLoopDayTimeHandleImpl();
 
-            var t = DateTime.Now;
-            if (t.Hour != 0 || t.Minute != 0 || (Tick - loopDayTick) < 24 * 60 * 60 * 1000)
+            var marker = GetLoopDayMarker(time);
+            if (loopDayTick != marker)
             {
-                return;
+                RequeueLoopDayHandles();
+                loopDayTick = marker;
             }
 
-            foreach (var (key, item) in requeueLoopDayTimeHandles)
-            {
-                if (!loopDayTimeHandles.TryGetValue(key, out var impls))
-                {
-                    impls = [];
-                    loopDayTimeHandles.Add(key, impls);
-                }
-                impls.AddRange(item);
-            }
-            requeueLoopDayTimeHandles.Clear();
-
-            loopDayTick = Tick;
             _dayTimeList.Clear();
             foreach (var (key, item) in loopDayTimeHandles)
             {
-                if (key.Hour != t.Hour || key.Minute != t.Minute || key.Second > t.Second)
+                if (key.Hour != time.Hour || key.Minute != time.Minute || key.Second > time.Second)
                 {
                     continue;
                 }
@@ -69,7 +101,7 @@ public partial class TimerService
                     }
                     try
                     {
-                        handle(t);
+                        handle(time);
                     }
                     catch (Exception e)
                     {
@@ -98,7 +130,10 @@ public partial class TimerService
         }
         finally
         {
-            AddTickTime(888, PollLoopDayTimeHandleImpl);
+            if (reschedule)
+            {
+                AddTickTime(888, PollLoopDayTimeHandleImpl);
+            }
         }
     }
 
@@ -121,33 +156,26 @@ public partial class TimerService
 
     private void PollLoopWeekDayTimeHandleImpl(long tick)
     {
+        PollLoopWeekDayTimeHandleImpl(tick, DateTime.Now, reschedule: true);
+    }
+
+    private void PollLoopWeekDayTimeHandleImpl(long tick, DateTime time, bool reschedule)
+    {
         try
         {
             AddLoopWeekDayTimeHandleImpl();
 
-            var t = DateTime.Now;
-            if (t.DayOfWeek != DayOfWeek.Sunday || t.Hour != 0 || t.Minute != 0 || t.Second != 0 ||
-                (Tick - loopWeekDayTick) < 7 * 24 * 60 * 60 * 1000)
+            var marker = GetLoopWeekMarker(time);
+            if (loopWeekDayTick != marker)
             {
-                return;
+                RequeueLoopWeekDayHandles();
+                loopWeekDayTick = marker;
             }
-
-            foreach (var (key, item) in requeueLoopWeekDayTimeHandles)
-            {
-                if (!loopWeekDayTimeHandles.TryGetValue(key, out var impls))
-                {
-                    impls = [];
-                    loopWeekDayTimeHandles.Add(key, impls);
-                }
-                impls.AddRange(item);
-            }
-            requeueLoopWeekDayTimeHandles.Clear();
-            loopWeekDayTick = Tick;
 
             _weekDayTimeList.Clear();
             foreach (var (key, item) in loopWeekDayTimeHandles)
             {
-                if (key.Day != t.DayOfWeek || key.Hour != t.Hour || key.Minute != t.Minute || key.Second > t.Second)
+                if (key.Day != time.DayOfWeek || key.Hour != time.Hour || key.Minute != time.Minute || key.Second > time.Second)
                 {
                     continue;
                 }
@@ -167,7 +195,7 @@ public partial class TimerService
                     }
                     try
                     {
-                        handle(t);
+                        handle(time);
                     }
                     catch (Exception e)
                     {
@@ -196,7 +224,10 @@ public partial class TimerService
         }
         finally
         {
-            AddTickTime(888, PollLoopWeekDayTimeHandleImpl);
+            if (reschedule)
+            {
+                AddTickTime(888, PollLoopWeekDayTimeHandleImpl);
+            }
         }
     }
 
@@ -243,5 +274,15 @@ public partial class TimerService
         }
 
         return impl;
+    }
+
+    internal void PollLoopDayTimeForTest(DateTime time)
+    {
+        PollLoopDayTimeHandleImpl(0, time, reschedule: false);
+    }
+
+    internal void PollLoopWeekDayTimeForTest(DateTime time)
+    {
+        PollLoopWeekDayTimeHandleImpl(0, time, reschedule: false);
     }
 }

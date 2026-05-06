@@ -9,7 +9,7 @@ public class RedisConnectionHelper
     private static readonly int ConnectRetry = 3;
     private static readonly int ConnectTimeout = 5000;
     private static readonly int KeepAlive = 30;
-    private static readonly ManualResetEvent WaitNotify = new ManualResetEvent(false);
+    private readonly ManualResetEvent _waitNotify = new ManualResetEvent(false);
 
     private readonly int _waitTimeout = 15000; //15s
     private readonly string _conUrl;
@@ -98,12 +98,12 @@ public class RedisConnectionHelper
             finally
             {
                 _inRecover = 0;
-                if (!WaitNotify.Set())
+                if (!_waitNotify.Set())
                 {
                     Log.Err("_waitNotify.Set() failed");
                 }
                 Thread.Sleep(10);
-                if (!WaitNotify.Reset())
+                if (!_waitNotify.Reset())
                 {
                     Log.Err("_waitNotify.ReSet() failed");
                 }
@@ -111,7 +111,7 @@ public class RedisConnectionHelper
         }
         else
         {
-            if (!WaitNotify.WaitOne(_waitTimeout))
+            if (!_waitNotify.WaitOne(_waitTimeout))
             {
                 var msg = $"_waitNotifyTimeout after {_waitTimeout}ms";
                 throw new TimeoutException(msg);
