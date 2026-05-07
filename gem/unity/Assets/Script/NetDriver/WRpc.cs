@@ -1,5 +1,6 @@
 using Google.Protobuf;
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Networking;
@@ -31,7 +32,7 @@ namespace Script.NetDriver
             _timeoutMs = timeoutMs > 0 ? timeoutMs : DefaultTimeoutMs;
         }
 
-        private async Task<Response> Post<T>(string method, T argv, string actionName) where T : IMessage<T>, new()
+        private async Task<Response> Post<T>(string method, T argv, string actionName, CancellationToken cancellationToken) where T : IMessage<T>, new()
         {
             var request = new Request()
             {
@@ -50,6 +51,12 @@ namespace Script.NetDriver
             var begin = Time.realtimeSinceStartupAsDouble;
             while (!operation.isDone)
             {
+                if (cancellationToken.IsCancellationRequested)
+                {
+                    webRequest.Abort();
+                    throw new OperationCanceledException($"{actionName} canceled", cancellationToken);
+                }
+
                 var elapsedMs = (Time.realtimeSinceStartupAsDouble - begin) * 1000.0;
                 if (elapsedMs >= _timeoutMs)
                 {
@@ -76,7 +83,12 @@ namespace Script.NetDriver
 
         public async Task<Result> Notify<T>(string method, T argv) where T : IMessage<T>, new()
         {
-            var response = await Post(method, argv, $"WRpc.Notify({method})");
+            return await Notify(method, argv, CancellationToken.None);
+        }
+
+        public async Task<Result> Notify<T>(string method, T argv, CancellationToken cancellationToken) where T : IMessage<T>, new()
+        {
+            var response = await Post(method, argv, $"WRpc.Notify({method})", cancellationToken);
             if (!string.IsNullOrEmpty(response.ErrMsg))
             {
                 Debug.Log($"WRpc.Notify response error: {response.ErrMsg}");
@@ -91,8 +103,15 @@ namespace Script.NetDriver
             where T1 : IMessage<T1>, new()
             where T2 : IMessage<T2>, new()
         {
+            return await Request<T1, T2>(method, argv, CancellationToken.None);
+        }
+
+        public async Task<Result<T1>> Request<T1, T2>(string method, T2 argv, CancellationToken cancellationToken) 
+            where T1 : IMessage<T1>, new()
+            where T2 : IMessage<T2>, new()
+        {
             var ret = new Result<T1>();
-            var response = await Post(method, argv, $"WRpc.Request({method})");
+            var response = await Post(method, argv, $"WRpc.Request({method})", cancellationToken);
             if (!string.IsNullOrEmpty(response.ErrMsg))
             {
                 Debug.LogError($"WRpc.Request response error: {response.ErrMsg}");
