@@ -32,7 +32,7 @@ public class RedisConnectionHelper
         _conf = BuildConfig(conUrl, conName);
     }
 
-    public void ConnectOnStartup(ref ConnectionMultiplexer? connectionMultiplexer, ref IDatabase? database)
+    public void ConnectOnStartup(ref ConnectionMultiplexer? connectionMultiplexer, ref IDatabase? database, ref ISubscriber? subscriber)
     {
         try
         {
@@ -43,6 +43,7 @@ public class RedisConnectionHelper
             
             connectionMultiplexer = ConnectionMultiplexer.Connect(_conf);
             database = connectionMultiplexer.GetDatabase(_db);
+            subscriber = connectionMultiplexer.GetSubscriber();
         }
         catch (StackExchange.Redis.RedisConnectionException ex)
         {

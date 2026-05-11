@@ -14,12 +14,13 @@ public class RedisHandle
     private const int RecoverRetryDelayMs = 8;
     private ConnectionMultiplexer? _connectionMultiplexer;
     private IDatabase? _database;
+    private ISubscriber? _subscriber;
     private readonly RedisConnectionHelper _connHelper;
 
     public RedisHandle(string connUrl, string pwd)
     {
         _connHelper = new RedisConnectionHelper(connUrl, "RedisForCache", pwd);
-        _connHelper.ConnectOnStartup(ref _connectionMultiplexer, ref _database);
+        _connHelper.ConnectOnStartup(ref _connectionMultiplexer, ref _database, ref _subscriber);
     }
 
     private void Recover(System.Exception e)
@@ -183,6 +184,59 @@ public class RedisHandle
                 }
                 
                 return _database.KeyDelete(key);
+            }
+            catch (RedisTimeoutException e)
+            {
+                Recover(e);
+                Thread.Sleep(RecoverRetryDelayMs);
+            }
+        }
+    }
+
+    public Task<long>  Publish<T>(string channel, T data)
+    {
+        while (true)
+        {
+            try
+            {
+                if (_subscriber == null)
+                {
+                    return Task.FromResult((long)0);
+                }
+                
+                return _subscriber.PublishAsync(RedisChannel.Literal(channel), JsonConvert.SerializeObject(data));
+            }
+            catch (RedisTimeoutException e)
+            {
+                Recover(e);
+                Thread.Sleep(RecoverRetryDelayMs);
+            }
+        }
+    }
+
+    public void Subscribe(string channel, Action<string?, string?> handler)
+    {
+        while (true)
+        {
+            try
+            {
+                if (_subscriber == null)
+                {
+                    return;
+                }
+
+                var t = _subscriber.Subscribe(RedisChannel.Literal(channel));
+                t?.OnMessage((msg) =>
+                {
+                    try
+                    {
+                        handler?.Invoke(msg.Channel, msg.Message);
+                    }
+                    catch(Exception e)
+                    {
+                        Recover(e);
+                    }
+                });
             }
             catch (RedisTimeoutException e)
             {
