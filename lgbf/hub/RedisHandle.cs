@@ -1,11 +1,12 @@
-using System;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
+using Google.Protobuf;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization;
 using Newtonsoft.Json;
 using StackExchange.Redis;
+using System;
+using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace hub;
 
@@ -193,7 +194,7 @@ public class RedisHandle
         }
     }
 
-    public Task<long>  Publish<T>(string channel, T data)
+    public Task<long>  Publish<T>(string channel, T data) where T : IMessage<T>, new()
     {
         while (true)
         {
@@ -204,7 +205,7 @@ public class RedisHandle
                     return Task.FromResult((long)0);
                 }
                 
-                return _subscriber.PublishAsync(RedisChannel.Literal(channel), JsonConvert.SerializeObject(data));
+                return _subscriber.PublishAsync(RedisChannel.Literal(channel), data.ToByteArray());
             }
             catch (RedisTimeoutException e)
             {
@@ -214,7 +215,7 @@ public class RedisHandle
         }
     }
 
-    public void Subscribe(string channel, Action<string?, string?> handler)
+    public void Subscribe(string channel, Action<string?, byte[]?> handler)
     {
         while (true)
         {

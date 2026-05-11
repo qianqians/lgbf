@@ -38,7 +38,7 @@ namespace Script.NetDriver
             {
                 Token = _token,
                 ProtoName = method,
-                Content = argv.ToByteString()
+                Content = argv.ToByteArray()
             };
             var requestBytes = request.ToByteArray();
             using UnityWebRequest webRequest = new UnityWebRequest(_uri, UnityWebRequest.kHttpVerbPOST);
