@@ -9,7 +9,7 @@ public class WRpc
 
     private delegate Task RpcHandler(HttpRsp rsp, string avatarId, ByteString data);
 
-    private readonly Dictionary<string, RpcHandler> callbackNtf = new();
+    private readonly Dictionary<string, RpcHandler> _callbackNtf = new();
 
     public WRpc(string uri)
     {
@@ -23,7 +23,7 @@ public class WRpc
                 }
 
                 var req = Request.Parser.ParseFrom(rsp.Data, 0, rsp.Length);
-                if (!callbackNtf.TryGetValue(req.ProtoName, out var callback))
+                if (!_callbackNtf.TryGetValue(req.ProtoName, out var callback))
                 {
                     throw new Exception($"rpc request failed! unknown proto: {req.ProtoName}");
                 }
@@ -47,7 +47,7 @@ public class WRpc
     public void RegisterNtf<T>(string method, Action<Context, T> callback) where T : IMessage<T>, new()
     {
         var parser = new MessageParser<T>(() => new T());
-        callbackNtf.Add(method, async (HttpRsp rsp, string avatarId, ByteString data) =>
+        _callbackNtf.Add(method, async (HttpRsp rsp, string avatarId, ByteString data) =>
         {
             var r = new Response();
             try
@@ -73,7 +73,7 @@ public class WRpc
     public void RegisterAsyncNtf<T>(string method, Func<Context, T, Task> callback) where T : IMessage<T>, new()
     {
         var parser = new MessageParser<T>(() => new T());
-        callbackNtf.Add(method, async (HttpRsp rsp, string avatarId, ByteString data) =>
+        _callbackNtf.Add(method, async (HttpRsp rsp, string avatarId, ByteString data) =>
         {
             var r = new Response();
             try
@@ -101,7 +101,7 @@ public class WRpc
         where T2 : IMessage<T2>, new()
     {
         var parser1 = new MessageParser<T1>(() => new T1());
-        callbackNtf.Add(method, async (HttpRsp rsp, string avatarId, ByteString data) =>
+        _callbackNtf.Add(method, async (HttpRsp rsp, string avatarId, ByteString data) =>
         {
             var r = new Response();
             try
@@ -129,7 +129,7 @@ public class WRpc
         where T2 : IMessage<T2>, new()
     {
         var parser1 = new MessageParser<T1>(() => new T1());
-        callbackNtf.Add(method, async (HttpRsp rsp, string avatarId, ByteString data) =>
+        _callbackNtf.Add(method, async (HttpRsp rsp, string avatarId, ByteString data) =>
         {
             var r = new Response();
             try

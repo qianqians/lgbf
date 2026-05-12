@@ -53,7 +53,7 @@ public class RedisConnectionHelper
         }
     }
 
-    public void Recover(ref ConnectionMultiplexer connectionMultiplexer, ref IDatabase database, Exception e, Action? afterRecover = null)
+    public void Recover(ref ConnectionMultiplexer connectionMultiplexer, ref IDatabase database, ref ISubscriber? subscriber, Exception e, Action? afterRecover = null)
     {
         if (Interlocked.CompareExchange(ref _inRecover, 1, 0) == 0)
         {
@@ -71,6 +71,7 @@ public class RedisConnectionHelper
                     {
                         connectionMultiplexer = ConnectionMultiplexer.Connect(_conf);
                         database = connectionMultiplexer.GetDatabase(_db);
+                        subscriber = connectionMultiplexer.GetSubscriber();
                         Volatile.Write(ref _lastRecoverSucceeded, 1);
                         break;
                     }

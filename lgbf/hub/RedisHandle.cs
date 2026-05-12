@@ -30,7 +30,7 @@ public class RedisHandle
         {
             return;
         }
-        _connHelper.Recover(ref _connectionMultiplexer, ref _database, e);
+        _connHelper.Recover(ref _connectionMultiplexer, ref _database, ref _subscriber, e);
     }
 
     public Task<bool> Expire(string key, int timeout)
@@ -204,8 +204,15 @@ public class RedisHandle
                 {
                     return Task.FromResult((long)0);
                 }
+
+                var ntf = new Request()
+                {
+                    Token = channel,
+                    ProtoName = typeof(T).FullName,
+                    Content = data.ToByteString()
+                };
                 
-                return _subscriber.PublishAsync(RedisChannel.Literal(channel), data.ToByteArray());
+                return _subscriber.PublishAsync(RedisChannel.Literal(channel), ntf.ToByteArray());
             }
             catch (RedisTimeoutException e)
             {
